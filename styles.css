@@ -77,7 +77,7 @@ a:hover { color: #dcefe2; }
   position: relative;
   max-width: 1100px;
   margin: 0 auto;
-  padding: 20px 24px 120px;
+  padding: 20px 24px 90px;
   display: flex;
   flex-direction: column;
   gap: 110px;
@@ -320,7 +320,14 @@ a:hover { color: #dcefe2; }
 /* Cards */
 .card-row { display: flex; flex-wrap: wrap; gap: 32px; }
 
-.hl { transition: opacity 0.2s, box-shadow 0.2s; }
+.hl { transition: opacity 0.2s, box-shadow 0.2s, transform 0.2s; }
+
+/* Scroll-in reveal (class added by script.js, so nothing is hidden without JS) */
+.reveal { transition: opacity 0.6s, translate 0.6s, box-shadow 0.2s, transform 0.2s; }
+.reveal:not(.is-visible) { opacity: 0; translate: 0 28px; }
+
+/* Cards straighten and lift when pointed at */
+.paper-card:hover, .project:hover { transform: rotate(0deg) translateY(-6px); }
 .hl.is-faded { opacity: 0.35; }
 
 .paper-card {
@@ -418,6 +425,16 @@ a:hover { color: #dcefe2; }
 .chips button:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink); }
 .chips button:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--ink); }
 .chips button[aria-pressed="true"] { background: var(--pin); }
+.chips button.has-work::after {
+  content: '';
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-left: 8px;
+  border-radius: 50%;
+  background: var(--pin);
+  border: 1.5px solid var(--ink);
+}
 .chips button:focus-visible { outline-color: var(--forest); outline-offset: 3px; }
 
 .sel-text {
@@ -503,14 +520,29 @@ a:hover { color: #dcefe2; }
 .project.is-hit { box-shadow: 0 0 0 5px var(--pin), 0 12px 26px rgba(0,0,0,0.25); }
 .project .photo {
   aspect-ratio: 4 / 3;
-  background: #dde3dc;
+  /* a scrap of the cutting mat with a chalk sketch; swap the svg for an <img> when photos are ready */
+  background-color: var(--ground);
+  background-image:
+    linear-gradient(rgba(255,255,255,0.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.22) 1px, transparent 1px);
+  background-size: 28px 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--hand);
-  font-size: 20px;
-  color: #3a4640;
 }
+.project .photo img { width: 100%; height: 100%; object-fit: cover; }
+.sketch {
+  width: 72%;
+  height: auto;
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: url(#sketch);
+}
+.sketch .faint { stroke-width: 1.5; opacity: 0.6; }
+.sketch .dot { fill: #ffffff; stroke: none; }
 .project h3 {
   margin: 6px 6px 0;
   font-family: var(--hand);
@@ -576,6 +608,29 @@ a:hover { color: #dcefe2; }
   transform: rotate(-4deg) scale(1.05);
 }
 .ic-label { font-family: var(--hand); font-size: 24px; }
+
+/* Footer */
+.footer {
+  position: relative;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px 40px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 24px;
+  font-family: var(--hand);
+  font-size: 20px;
+}
+.footer p { margin: 0; opacity: 0.85; }
+.footer a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  text-decoration: none;
+}
+.footer a:hover { text-decoration: underline; }
 
 /* Responsive */
 @media (max-width: 1240px) {

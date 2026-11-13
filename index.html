@@ -5,12 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sheetal Mannan — Portfolio</title>
 <meta name="description" content="Sheetal Mannan — computer engineer working across software, AI and hardware in Toronto.">
+<meta name="theme-color" content="#2b5649">
+<link rel="icon" type="image/png" href="assets/avatar.png">
+<link rel="apple-touch-icon" href="assets/avatar.png">
+<!-- Link previews (LinkedIn, iMessage, Slack). Once the site is live, change og:image to its full https:// URL. -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Sheetal Mannan — Portfolio">
+<meta property="og:description" content="Computer engineer working across software, AI and hardware in Toronto.">
+<meta property="og:image" content="assets/avatar.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&amp;family=Gochi+Hand&amp;family=Young+Serif&amp;display=swap">
 <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body id="top">
 <a class="skip-link" href="#about">Skip to content</a>
 
 <!-- Shared push-pin graphic -->
@@ -20,6 +28,8 @@
     <circle cx="17" cy="15" r="11" fill="var(--pin)" stroke="rgba(0,0,0,0.2)" stroke-width="1.5"/>
     <circle cx="13" cy="11" r="3.5" fill="rgba(255,255,255,0.55)"/>
   </symbol>
+  <!-- Gives the project sketches a wobbly, hand-drawn line -->
+  <filter id="sketch"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="4" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="3.5"/></filter>
 </svg>
 
 <div class="page">
@@ -66,7 +76,7 @@
           <h2>Hi, I'm Sheetal!</h2>
           <p>I'm a Computer Engineering grad from the University of Guelph (2026). I like building things that sit between code and circuits — AI/ML tools, applications, and the hardware they run on. I'm looking for new-grad roles in software, AI, and hardware engineering.</p>
           <div class="btn-row">
-            <a class="btn btn-solid" href="https://www.linkedin.com/in/sheetal-mannan-6363371bb/">LinkedIn</a>
+            <a class="btn btn-solid" href="https://www.linkedin.com/in/sheetal-mannan-6363371bb/" target="_blank" rel="noopener">LinkedIn</a>
             <a class="btn btn-outline" href="#">Résumé [PDF LINK]</a>
           </div>
         </div>
@@ -105,7 +115,7 @@
       <div class="heading">
         <h2>./Parts bin<span class="cursor" aria-hidden="true"></span></h2>
         <svg aria-hidden="true" width="210" height="18" viewBox="0 0 210 18"><path d="M4 11 C46 4 100 5 146 10 C170 12 188 9 204 5"/></svg>
-        <p class="subhead">my tech stack. tap a part to see where I’ve used it</p>
+        <p class="subhead">my tech stack. tap a part with a yellow dot to see where I’ve used it</p>
       </div>
       <div class="bin">
         <div class="drawer">
@@ -126,7 +136,7 @@
         </div>
         <div class="drawer">
           <h3>Tools</h3>
-          <div class="chips"><button type="button" aria-pressed="false">Git</button><button type="button" aria-pressed="false">Docker</button><button type="button" aria-pressed="false">Linux</button><button type="button" aria-pressed="false">Xilinx Vivado</button><button type="button" aria-pressed="false">ModelSim</button><button type="button" aria-pressed="false">MATLAB/Simulink</button><button type="button" aria-pressed="false">Eclipse</button><button type="button" aria-pressed="false">Jira</button></div>
+          <div class="chips"><button type="button" aria-pressed="false">Git</button><button type="button" aria-pressed="false">Docker</button><button type="button" aria-pressed="false">Linux</button><button type="button" aria-pressed="false">Xilinx Vivado</button><button type="button" aria-pressed="false">ModelSim</button><button type="button" aria-pressed="false">Cadence Virtuoso</button><button type="button" aria-pressed="false">MATLAB/Simulink</button><button type="button" aria-pressed="false">Eclipse</button><button type="button" aria-pressed="false">Jira</button></div>
         </div>
       </div>
       <p class="sel-text" aria-live="polite"></p>
@@ -149,56 +159,56 @@
         <ul class="strip" id="project-strip" tabindex="0" aria-label="Projects, scroll horizontally">
           <li class="project hl" data-id="utensil">
             <svg class="pin" aria-hidden="true" width="34" height="34"><use href="#pin"/></svg>
-            <div class="photo">[photo of the build]</div>
+            <div class="photo"><svg class="sketch" aria-hidden="true" viewBox="0 0 200 150"><g transform="rotate(-25 100 75)"><ellipse cx="56" cy="75" rx="28" ry="19"/><path d="M84 75 H126"/><rect x="126" y="65" width="46" height="20" rx="6"/></g><path d="M26 30 q6 -9 12 0 t12 0"/><path d="M150 128 q6 -9 12 0 t12 0"/></svg></div>
             <h3>Self-Stabilizing Utensil for Parkinson's Disease Patients</h3>
             <p>Real-time tremor-cancellation device using Python signal processing, I2C sensor integration, closed-loop PID control, and a custom PCB with EMC compliance.</p>
             <p class="meta">Embedded Systems · PID Control · PCB Design · Python</p>
           </li>
           <li class="project hl" data-id="dnn">
             <svg class="pin" aria-hidden="true" width="34" height="34"><use href="#pin"/></svg>
-            <div class="photo">[photo of the build]</div>
+            <div class="photo"><svg class="sketch" aria-hidden="true" viewBox="0 0 200 150"><g class="faint"><path d="M54 35 L91 25"/><path d="M54 35 L91 58"/><path d="M54 35 L91 92"/><path d="M54 35 L91 125"/><path d="M54 75 L91 25"/><path d="M54 75 L91 58"/><path d="M54 75 L91 92"/><path d="M54 75 L91 125"/><path d="M54 115 L91 25"/><path d="M54 115 L91 58"/><path d="M54 115 L91 92"/><path d="M54 115 L91 125"/><path d="M109 25 L146 55"/><path d="M109 25 L146 95"/><path d="M109 58 L146 55"/><path d="M109 58 L146 95"/><path d="M109 92 L146 55"/><path d="M109 92 L146 95"/><path d="M109 125 L146 55"/><path d="M109 125 L146 95"/></g><circle cx="45" cy="35" r="9"/><circle cx="45" cy="75" r="9"/><circle cx="45" cy="115" r="9"/><circle cx="100" cy="25" r="9"/><circle cx="100" cy="58" r="9"/><circle cx="100" cy="92" r="9"/><circle cx="100" cy="125" r="9"/><circle cx="155" cy="55" r="9"/><circle cx="155" cy="95" r="9"/></svg></div>
             <h3>Deep Neural Network Accelerator on FPGA</h3>
             <p>Fully-connected DNN in Verilog for MNIST digit classification (98% accuracy), integrated as an SoC with AXI4-Lite and an ARM processor.</p>
             <p class="meta">FPGA · Verilog · Machine Learning</p>
           </li>
           <li class="project hl" data-id="ecg">
             <svg class="pin" aria-hidden="true" width="34" height="34"><use href="#pin"/></svg>
-            <div class="photo">[photo of the build]</div>
+            <div class="photo"><svg class="sketch" aria-hidden="true" viewBox="0 0 200 150"><rect x="62" y="37" width="76" height="76" rx="18"/><path d="M78 37 L83 12 H117 L122 37"/><path d="M78 113 L83 138 H117 L122 113"/><path d="M72 78 H86 L93 62 L101 96 L109 54 L116 78 H128"/></svg></div>
             <h3>Mixed-Signal IC Design — Smart Watch ECG Sensor</h3>
             <p>Mixed-signal CMOS front-end (3:1 MUX, PGA, 6-bit SAR ADC) designed in TSMC 65nm using Cadence Virtuoso.</p>
             <p class="meta">IC Design · Cadence Virtuoso · Mixed-Signal</p>
           </li>
           <li class="project hl" data-id="security">
             <svg class="pin" aria-hidden="true" width="34" height="34"><use href="#pin"/></svg>
-            <div class="photo">[photo of the build]</div>
+            <div class="photo"><svg class="sketch" aria-hidden="true" viewBox="0 0 200 150"><path d="M42 76 L100 28 L158 76"/><path d="M56 66 V128 H144 V66"/><rect x="89" y="92" width="22" height="36" rx="2"/><path d="M164 34 a14 14 0 0 1 0 24"/><path d="M174 24 a28 28 0 0 1 0 44"/></svg></div>
             <h3>Real-Time Home Security System</h3>
             <p>FreeRTOS-based system with three concurrent tasks (motion detection, image capture, alerts); interrupt-driven PIR sensing, ArduCam, RTOS semaphores/queues, &lt;200ms response time.</p>
             <p class="meta">FreeRTOS · Embedded Systems · Real-Time OS</p>
           </li>
           <li class="project hl" data-id="quadcopter">
             <svg class="pin" aria-hidden="true" width="34" height="34"><use href="#pin"/></svg>
-            <div class="photo">[photo of the build]</div>
+            <div class="photo"><svg class="sketch" aria-hidden="true" viewBox="0 0 200 150"><path d="M88 66 L52 38 M112 66 L148 38 M88 86 L52 114 M112 86 L148 114"/><rect x="84" y="62" width="32" height="28" rx="7"/><ellipse cx="52" cy="36" rx="26" ry="8"/><ellipse cx="148" cy="36" rx="26" ry="8"/><ellipse cx="52" cy="112" rx="26" ry="8"/><ellipse cx="148" cy="112" rx="26" ry="8"/></svg></div>
             <h3>Infrared Target Detection &amp; Aerial Response Quadcopter</h3>
             <p>Autonomous quadcopter detecting 940nm IR sources and computing GPS coordinates; spiral waypoint navigation in Python, Raspberry Pi 4 + Cube Orange, 30%+ reduction in positional error.</p>
             <p class="meta">Robotics · Computer Vision · Python</p>
           </li>
           <li class="project hl" data-id="synth">
             <svg class="pin" aria-hidden="true" width="34" height="34"><use href="#pin"/></svg>
-            <div class="photo">[photo of the build]</div>
+            <div class="photo"><svg class="sketch" aria-hidden="true" viewBox="0 0 200 150"><path d="M30 20 V130"/><path class="faint" d="M30 75 H184" stroke-dasharray="6 7"/><path d="M32 75 q18.5 -76 37 0 t37 0 t37 0 t37 0"/></svg></div>
             <h3>Digital Waveform Synthesizer</h3>
             <p>FPGA-based sine wave generator on a Nexys A7 board; VHDL, Xilinx Vivado, 89% execution-time reduction vs. a software-based approach.</p>
             <p class="meta">FPGA · VHDL · Xilinx Vivado</p>
           </li>
           <li class="project hl" data-id="facial">
             <svg class="pin" aria-hidden="true" width="34" height="34"><use href="#pin"/></svg>
-            <div class="photo">[photo of the build]</div>
+            <div class="photo"><svg class="sketch" aria-hidden="true" viewBox="0 0 200 150"><ellipse cx="100" cy="75" rx="28" ry="35"/><circle class="dot" cx="89" cy="68" r="3"/><circle class="dot" cx="111" cy="68" r="3"/><path d="M88 89 q12 10 24 0"/><path d="M46 44 V24 H66 M134 24 H154 V44 M46 106 V126 H66 M134 126 H154 V106"/></svg></div>
             <h3>Deep Learning Facial Verification Model</h3>
             <p>Siamese neural network for facial authentication, built with TensorFlow on the LFW dataset with custom training loops.</p>
             <p class="meta">TensorFlow · Deep Learning · Computer Vision</p>
           </li>
           <li class="project hl" data-id="counter">
             <svg class="pin" aria-hidden="true" width="34" height="34"><use href="#pin"/></svg>
-            <div class="photo">[photo of the build]</div>
+            <div class="photo"><svg class="sketch" aria-hidden="true" viewBox="0 0 200 150"><rect x="64" y="39" width="72" height="72" rx="6"/><path d="M78 39 V24 M93 39 V24 M107 39 V24 M122 39 V24 M78 111 V126 M93 111 V126 M107 111 V126 M122 111 V126 M64 53 H49 M64 68 H49 M64 82 H49 M64 97 H49 M136 53 H151 M136 68 H151 M136 82 H151 M136 97 H151"/><path d="M78 86 H88 V66 H100 V86 H112 V66 H122"/></svg></div>
             <h3>Transistor-Level 8-bit Program Counter Design</h3>
             <p>Full-custom static CMOS design (mux, adder, flip-flop register) built in Cadence Virtuoso.</p>
             <p class="meta">IC Design · CMOS · Cadence Virtuoso</p>
@@ -230,6 +240,11 @@
     </section>
 
   </main>
+
+  <footer class="footer">
+    <p>© 2026 Sheetal Mannan</p>
+    <a href="#top">back to top ↑</a>
+  </footer>
 </div>
 
 <script src="script.js"></script>

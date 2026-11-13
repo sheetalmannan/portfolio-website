@@ -101,6 +101,7 @@
     'RTOS': ['security'],
     'Raspberry Pi': ['quadcopter'],
     'TensorFlow': ['facial'],
+    'Cadence Virtuoso': ['ecg', 'counter'],
     'FastAPI': ['moogle']
   };
   const names = {
@@ -121,6 +122,11 @@
   const strip = document.querySelector('.strip');
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let selected = null;
+
+  // Mark the chips that link to featured work with a yellow dot.
+  chips.forEach((chip) => {
+    if (where[chip.textContent]) chip.classList.add('has-work');
+  });
 
   // Bring the first matching project into view inside the strip (without moving the page).
   function scrollToProject(id) {
@@ -167,5 +173,24 @@
       selected = null;
       render();
     }
+  });
+})();
+
+// Cards drift up into place the first time they scroll into view.
+(function () {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion || !('IntersectionObserver' in window)) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      observer.unobserve(entry.target);
+      entry.target.classList.add('is-visible');
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.intro, .paper-card, .bin, .carousel, .icon-links').forEach((el) => {
+    el.classList.add('reveal');
+    observer.observe(el);
   });
 })();
