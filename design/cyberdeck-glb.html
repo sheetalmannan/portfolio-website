@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cyberdeck Hero — Sheetal Mannan</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&family=VT323&display=swap">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js">
+<link rel="preload" href="../public/models/cyberdeck-web.glb" as="fetch" crossorigin>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<style>
+/* Direction A · Phosphor & Putty (the approved light design) */
+:root {
+  --bg: #f3eee4; --surface: #e8e0cf; --text: #1f1b16; --muted: #5e554a;
+  --accent: #b4400f; --on-accent: #fff8ee; --line: rgba(31,27,22,0.18);
+  --grid: rgba(31,27,22,0.075); --grid-mark: rgba(31,27,22,0.28);
+  --f-display: "Archivo", sans-serif; --display-stretch: 125%; --display-weight: 750; --display-track: -0.02em;
+  --f-body: "IBM Plex Sans", sans-serif; --f-mono: "IBM Plex Mono", monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(circle, var(--grid-mark) 1.6px, transparent 1.7px),
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 192px 192px, 48px 48px, 48px 48px;
+  background-position: -0.5px -0.5px, 0 0, 0 0;
+  color: var(--text);
+  font: 17px/1.6 var(--f-body);
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+.skip { position: absolute; left: 16px; top: -60px; padding: 10px 14px; background: var(--text); color: var(--bg); z-index: 10; }
+.skip:focus { top: 12px; }
+
+.nav {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; align-items: center; gap: 28px;
+  max-width: 1248px; margin: 0 auto; padding: 18px 24px;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(8px);
+}
+.mark {
+  position: relative; display: grid; place-items: center; width: 38px; height: 38px;
+  border: 1.5px solid var(--text); border-radius: 6px;
+  font: 600 13px var(--f-mono); text-decoration: none;
+}
+.mark::before, .mark::after {
+  content: ""; position: absolute; top: 9px; width: 5px; height: 1.5px; background: var(--text);
+  box-shadow: 0 8px 0 var(--text), 0 16px 0 var(--text);
+}
+.mark::before { left: -6px; }
+.mark::after { right: -6px; }
+.nav ul { display: flex; gap: 26px; margin: 0 0 0 auto; padding: 0; list-style: none; }
+.nav ul a {
+  display: inline-flex; align-items: center; min-height: 44px;
+  font: 500 13px var(--f-mono); letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none;
+}
+.nav ul a span { color: var(--muted); margin-right: 6px; }
+.nav ul a:hover { color: var(--accent); }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px;
+  border: 1.5px solid transparent; border-radius: 8px;
+  font: 500 15px var(--f-body); text-decoration: none; cursor: pointer;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 160ms ease-out;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover { background: color-mix(in srgb, var(--accent) 86%, var(--text)); }
+.btn-ghost { border-color: var(--text); background: transparent; color: var(--text); }
+.btn-ghost:hover { background: color-mix(in srgb, var(--text) 8%, transparent); }
+
+.hero {
+  display: grid; grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr); align-items: center; gap: 16px;
+  max-width: 1248px; min-height: calc(100vh - 80px); margin: 0 auto; padding: 0 24px 48px;
+}
+.label {
+  margin: 0;
+  font: 500 12px/1.4 var(--f-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+}
+h1 {
+  margin: 16px 0 20px;
+  font-family: var(--f-display); font-weight: var(--display-weight);
+  font-stretch: var(--display-stretch); letter-spacing: var(--display-track);
+  font-size: clamp(48px, 6.4vw, 96px); line-height: 0.95;
+}
+.intro { margin: 0 0 30px; max-width: 470px; color: var(--muted); }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+.deck { margin: 0; min-width: 0; }
+.stage { position: relative; aspect-ratio: 1.16; width: 100%; border-radius: 12px; }
+.stage canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+  cursor: grab; opacity: 0; transition: opacity 400ms ease-out;
+  /* a vertical swipe still scrolls the page; a sideways drag turns the deck */
+  touch-action: pan-y !important;
+}
+.stage canvas:active { cursor: grabbing; }
+.stage.ready canvas { opacity: 1; }
+.stage .note { position: absolute; left: 50%; top: 50%; translate: -50% -50%; margin: 0; font: 13px var(--f-mono); color: var(--muted); letter-spacing: 0.1em; text-align: center; }
+.stage.ready .note { display: none; }
+.deck figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 24px; margin-top: 4px; font: 400 11px/1.5 var(--f-mono); letter-spacing: 0.06em; color: var(--muted); }
+.deck figcaption p { margin: 0; }
+.hint { text-transform: uppercase; letter-spacing: 0.14em; }
+.hint .touch { display: none; }
+@media (hover: none) and (pointer: coarse) {
+  .hint .mouse { display: none; }
+  .hint .touch { display: inline; }
+}
+.credit a { text-underline-offset: 2px; }
+.credit a:hover { color: var(--accent); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+@media (max-width: 900px) {
+  .nav ul { display: none; }
+  .nav .btn { margin-left: auto; }
+  .hero { grid-template-columns: 1fr; min-height: 0; padding-top: 24px; padding-bottom: 64px; }
+}
+@media (max-width: 520px) {
+  .nav, .hero { padding-left: 16px; padding-right: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn, .stage canvas { transition: none; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <a class="mark" href="#main" aria-label="Sheetal Mannan, home">SM</a>
+  <ul>
+    <li><a href="#main"><span>01</span>projects</a></li>
+    <li><a href="#main"><span>02</span>experience</a></li>
+    <li><a href="#main"><span>03</span>skills</a></li>
+    <li><a href="#main"><span>04</span>say hi</a></li>
+  </ul>
+  <a class="btn btn-ghost" href="#main">Résumé</a>
+</header>
+
+<main id="main" class="hero">
+  <div>
+    <p class="label">computer engineer · software, AI &amp; hardware · Toronto</p>
+    <h1>Sheetal Mannan</h1>
+    <p class="intro">I'm a Computer Engineering grad from the University of Guelph (2026). I like building things that sit between code and circuits — AI/ML tools, applications, and the hardware they run on. I'm looking for new-grad roles in software, AI, and hardware engineering.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="#main">View projects →</a>
+      <a class="btn btn-ghost" href="https://www.linkedin.com/in/sheetal-mannan-6363371bb/" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </div>
+  <figure class="deck">
+    <div class="stage" id="stage" tabindex="0" role="group" aria-describedby="deck-keys"
+         aria-label="Interactive 3D model of the SM-01 cyberdeck: a portable computer with a keyboard, two antennas and a teal screen showing a pixel-art portrait of Sheetal and the text hi, I'm Sheetal, computer engineer, Toronto">
+      <canvas id="deck" aria-hidden="true"></canvas>
+      <p class="note" id="note">booting…</p>
+    </div>
+    <p class="sr" id="deck-keys">Use the arrow keys to turn the model, plus and minus to zoom, and Home to reset the view.</p>
+    <figcaption>
+      <p class="hint" aria-hidden="true"><span class="mouse">Drag to rotate · double-click to reset</span><span class="touch">Drag sideways to rotate</span></p>
+      <p class="credit">3D model: <a href="https://sketchfab.com/3d-models/cyberdeck-eb82075a071c49aca7fc0e0ec619664c">“Cyberdeck”</a> by <a href="https://sketchfab.com/7chaner">7chaner</a>, licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Modified.</p>
+    </figcaption>
+  </figure>
+</main>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/*
+  Model: public/models/cyberdeck-web.glb (built by source-assets/build_cyberdeck.py)
+    meshes     comp_low (monitor), key_low (keyboard deck, carries the SM-01 lettering), scope_low (scope and
+               the small left display), pipes_low, pipes2_low, cool_low: all share the material `deck_body`
+    crt_screen the main CRT glass on its own: own material `crt_screen`, own 0-1 UVs
+               (u left to right, v top to bottom), aspect 2.89 : 1
+  After normalising (longest side = 10 units, centred on the origin) y is up and the screen faces +x.
+*/
+
+// Teal phosphor, taken from the small left display's texture (its bright pixels average rgb 63,172,130;
+// scaled to full brightness that is #5dffc1). The left display itself is untouched.
+const SCREEN = { crt: '#04100d', phos: '#5dffc1', font: 'VT323', size: 58, glow: 4.5 };
+
+// Camera view in orbit terms. azimuth 0 looks straight at the screen; positive turns toward the deck's right side.
+const VIEW = {
+  azimuth: 0.52, polar: 1.27,                 // default: three-quarter view, slightly above
+  azimuthRange: 1.2,                          // how far it can turn each way from the default (about 69°)
+  polarMin: 0.82, polarMax: 1.5,              // from about 47° above the horizon down to just above the desk
+  zoomIn: 0.82, zoomOut: 1.2,                 // distance limits, as a multiple of the fitted distance
+  target: new THREE.Vector3(0, -0.75, 0),
+};
+
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const stage = document.getElementById('stage');
+const note = document.getElementById('note');
+const canvas = document.getElementById('deck');
+
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+} catch (e) {
+  note.textContent = '3D preview needs WebGL.';
+  throw e;
+}
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.toneMapping = THREE.NeutralToneMapping;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFShadowMap;   // this type honours shadow.radius, which keeps the edges soft
+renderer.shadowMap.autoUpdate = false;   // the deck and the light never move (the camera does), so shadows are drawn once
+
+const scene = new THREE.Scene();
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.8;
+
+const camera = new THREE.PerspectiveCamera(26, 1, 0.5, 200);
+
+// key light from high on the front left, so the shadow stays close under the deck (it casts the shadows);
+// a cool rim from behind lifts the antennas and the scope off the background
+const key = new THREE.DirectionalLight(0xfff4e6, 1.15);
+key.position.set(-1.2, 15, 3.2);
+key.castShadow = true;
+key.shadow.mapSize.set(1024, 1024);
+key.shadow.radius = 7;
+key.shadow.blurSamples = 16;
+Object.assign(key.shadow.camera, { left: -9, right: 9, top: 9, bottom: -9, near: 1, far: 40 });
+key.shadow.bias = -0.0004;
+key.shadow.normalBias = 0.035;
+scene.add(key);
+const rim = new THREE.DirectionalLight(0xdfeaff, 0.4);
+rim.position.set(6, 5, -9);
+scene.add(rim);
+
+const norm = new THREE.Group();   // normalised model space (see the note above)
+norm.rotation.y = -Math.PI / 2;   // turn the screen (+x) toward +z, where azimuth 0 looks from
+scene.add(norm);
+
+/* ── Ground: a soft contact shadow plus the real cast shadow ───────── */
+const FLOOR_Y = -3.47;
+const blobCanvas = document.createElement('canvas');
+blobCanvas.width = blobCanvas.height = 256;
+{
+  const c = blobCanvas.getContext('2d');
+  const g = c.createRadialGradient(128, 128, 8, 128, 128, 128);
+  g.addColorStop(0, 'rgba(0,0,0,1)');
+  g.addColorStop(0.5, 'rgba(0,0,0,0.5)');
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  c.fillStyle = g;
+  c.fillRect(0, 0, 256, 256);
+}
+const blob = new THREE.Mesh(new THREE.PlaneGeometry(11, 13.5), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(blobCanvas), transparent: true, depthWrite: false, opacity: 0.26 }));
+blob.rotation.x = -Math.PI / 2;
+blob.position.set(0.4, FLOOR_Y - 0.02, 0);
+norm.add(blob);
+const floor = new THREE.Mesh(new THREE.CircleGeometry(16, 48), new THREE.ShadowMaterial({ opacity: 0.14 }));
+floor.rotation.x = -Math.PI / 2;
+floor.position.y = FLOOR_Y - 0.01;
+floor.receiveShadow = true;
+scene.add(floor);
+
+/* ── Screen content: drawn on a canvas, shown as the glass's own glow ─ */
+const screenCanvas = document.createElement('canvas');
+screenCanvas.width = 1152;
+screenCanvas.height = 398;   // 2.89 : 1, the glass's aspect
+const screenTex = new THREE.CanvasTexture(screenCanvas);
+screenTex.colorSpace = THREE.SRGBColorSpace;
+screenTex.flipY = false;     // crt_screen's UVs follow the glTF convention (v runs top to bottom)
+screenTex.anisotropy = 8;
+// Dark, slightly reflective glass; the canvas is its emissive map, so reflections stay on top of the picture.
+// Stage 2 can swap `screenMat.emissiveMap` for a portrait, or replace the material with a shader, on this mesh only.
+const screenMat = new THREE.MeshStandardMaterial({
+  name: 'crt_screen', color: 0x020605, roughness: 0.16, metalness: 0,
+  emissive: 0xffffff, emissiveMap: screenTex, envMapIntensity: 0.55,
+});
+// The screen's glow on the keyboard: a spotlight that starts in front of the glass and points down at the keys,
+// so it tints the deck without putting a bright reflection of itself on the glass.
+const screenGlow = new THREE.SpotLight(SCREEN.phos, SCREEN.glow, 7, 1.0, 0.9, 1.6);
+norm.add(screenGlow, screenGlow.target);
+
+const AVATAR = [
+  '........hhhhhhhh........',
+  '......hhhhhhhhhhhh......',
+  '.....hhhhhhhhhhhhhh.....',
+  '....hhhhhhhsshhhhhhh....',
+  '....hhhhhhsssshhhhhh....',
+  '...hhhhhsssssssshhhhh...',
+  '...hhhhsssssssssshhhh...',
+  '...hhhhsseesseesshhhh...',
+  '...hhhhsssssssssshhhh...',
+  '...hhhhssssnnsssshhhh...',
+  '...hhhhssmssssmsshhhh...',
+  '...hhhhsssmmmmssshhhh...',
+  '...hhhhhsssssssshhhhh...',
+  '...hhhhhhsssssshhhhhh...',
+  '...hhhhhh.kkkk.hhhhhh...',
+  '...hhhhhh.kkkk.hhhhhh...',
+  '..hhhhhccckkkkccchhhhh..',
+  '.hhhhhcccccsscccccchhhh.',
+  '.hhhhcccccccccccccchhhh.',
+  'hhhhcccccccccccccccchhhh',
+  'hhhcccccccccccccccccchhh',
+  'hhcccccccccccccccccccchh',
+  'hcccccccccccccccccccccch',
+  'cccccccccccccccccccccccc',
+];
+const LINES = [
+  ['SM-OS v1.0 · boot ok', 0.65],
+  ['> hi, i\'m sheetal!', 1],
+  ['> computer engineer', 0.8],
+  ['> toronto', 0.8],
+];
+
+// timings use the animation-frame clock; the boot starts on the first frame after the model appears
+let bootStart = null;
+let blinkUntil = 0;
+let nextBlink = 0;
+
+function pixelTone(ch, r, c, blinking) {
+  if (ch === 'h') return (r + c) % 2 === 0 ? 0.42 : 0.07;
+  if (ch === 's') return 1;
+  if (ch === 'k') return 0.75;
+  if (ch === 'n') return 0.5;
+  if (ch === 'c') return r % 2 === 0 ? 0.62 : 0.2;
+  if (ch === 'e') return blinking ? 1 : 0;
+  return 0;
+}
+
+function drawScreen(now) {
+  const ctx = screenCanvas.getContext('2d');
+  const W = screenCanvas.width, H = screenCanvas.height;
+  ctx.globalAlpha = 1;
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = SCREEN.crt;
+  ctx.fillRect(0, 0, W, H);
+
+  // faint phosphor haze; the screen stays dark so content reads clearly
+  const haze = ctx.createRadialGradient(W * 0.45, H * 0.5, 30, W * 0.5, H * 0.5, W * 0.6);
+  haze.addColorStop(0, SCREEN.phos + '1c');
+  haze.addColorStop(1, SCREEN.phos + '00');
+  ctx.fillStyle = haze;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.shadowColor = SCREEN.phos;
+  ctx.shadowBlur = 14;
+  ctx.fillStyle = SCREEN.phos;
+  ctx.textBaseline = 'alphabetic';
+  ctx.font = `${SCREEN.size}px "${SCREEN.font}", monospace`;
+
+  // boot: rows type out over about 2 s, then a blinking cursor (all instant under reduced motion)
+  if (bootStart === null) { bootStart = now; nextBlink = now + 2500; }
+  const elapsed = reduceMotion ? 1e9 : now - bootStart;
+  let budget = Math.floor(elapsed / 30);
+  const x0 = 60, lh = 82;
+  let y = 98, lastEnd = x0, lastY = y;
+  for (const [text, alpha] of LINES) {
+    if (budget <= 0) break;
+    const shown = text.slice(0, budget);
+    budget -= text.length + 4;
+    ctx.globalAlpha = alpha;
+    ctx.fillText(shown, x0, y);
+    lastEnd = x0 + ctx.measureText(shown).width;
+    lastY = y;
+    y += lh;
+  }
+  ctx.globalAlpha = 1;
+  if (reduceMotion || Math.floor(now / 530) % 2 === 0) {
+    const s = SCREEN.size;
+    ctx.fillRect(lastEnd + s * 0.18, lastY - s * 0.68, s * 0.46, s * 0.74);
+  }
+
+  // placeholder avatar on the right (the portrait replaces it in a later stage)
+  const avatarAlpha = reduceMotion ? 1 : Math.min(1, Math.max(0, (elapsed - 900) / 600));
+  if (avatarAlpha > 0) {
+    if (!reduceMotion && now > nextBlink) { blinkUntil = now + 140; nextBlink = now + 3200 + Math.random() * 2400; }
+    const blinking = now < blinkUntil;
+    const px = 13;
+    const ax = W - 72 - 24 * px, ay = (H - 24 * px) / 2 + (reduceMotion ? 0 : Math.sin(now / 900) * 2);
+    ctx.shadowBlur = 10;
+    AVATAR.forEach((row, r) => {
+      [...row].forEach((ch, c) => {
+        const t = pixelTone(ch, r, c, blinking);
+        if (!t) return;
+        ctx.globalAlpha = t * avatarAlpha;
+        ctx.fillRect(ax + c * px, ay + r * px, px - 1.5, px - 1.5);
+      });
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  // subtle scanlines, a faint rolling band and a vignette
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  for (let sy = 0; sy < H; sy += 4) ctx.fillRect(0, sy, W, 1.5);
+  if (!reduceMotion) {
+    const band = ((now / 22) % (H + 160)) - 80;
+    const g = ctx.createLinearGradient(0, band - 50, 0, band + 50);
+    g.addColorStop(0, 'rgba(255,255,255,0)');
+    g.addColorStop(0.5, 'rgba(255,255,255,0.03)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, band - 50, W, 100);
+  }
+  const vig = ctx.createRadialGradient(W / 2, H / 2, H * 0.4, W / 2, H / 2, W * 0.62);
+  vig.addColorStop(0, 'rgba(0,0,0,0)');
+  vig.addColorStop(1, 'rgba(0,0,0,0.55)');
+  ctx.fillStyle = vig;
+  ctx.fillRect(0, 0, W, H);
+
+  screenTex.needsUpdate = true;
+}
+
+/* ── Camera rig: every camera move goes through here ───────────────────
+   The view is three numbers: azimuth, polar and distance (distance as a multiple of the fitted distance).
+   OrbitControls writes them when the visitor drags; `rig.set()` writes them from code. A later scroll
+   timeline can set `controls.enabled = false`, tween a plain {azimuth, polar, zoom} object and call
+   `rig.set()` on every update, then hand control back. */
+const controls = new OrbitControls(camera, canvas);
+controls.target.copy(VIEW.target);
+controls.enablePan = false;
+controls.enableDamping = !reduceMotion;
+controls.dampingFactor = 0.08;
+controls.zoomSpeed = 0.6;
+controls.minAzimuthAngle = VIEW.azimuth - VIEW.azimuthRange;
+controls.maxAzimuthAngle = VIEW.azimuth + VIEW.azimuthRange;
+controls.minPolarAngle = VIEW.polarMin;
+controls.maxPolarAngle = VIEW.polarMax;
+controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_ROTATE };
+
+let fitDistance = 30;   // distance at which the deck fills the stage; set in resize()
+const clamp = THREE.MathUtils.clamp;
+const rig = {
+  get() {
+    const s = new THREE.Spherical().setFromVector3(camera.position.clone().sub(controls.target));
+    return { azimuth: s.theta, polar: s.phi, zoom: s.radius / fitDistance };
+  },
+  set({ azimuth, polar, zoom }) {
+    const now = rig.get();
+    const s = new THREE.Spherical(
+      clamp(zoom ?? now.zoom, VIEW.zoomIn, VIEW.zoomOut) * fitDistance,
+      clamp(polar ?? now.polar, VIEW.polarMin, VIEW.polarMax),
+      clamp(azimuth ?? now.azimuth, VIEW.azimuth - VIEW.azimuthRange, VIEW.azimuth + VIEW.azimuthRange),
+    );
+    camera.position.setFromSpherical(s).add(controls.target);
+    camera.lookAt(controls.target);
+    loop();
+  },
+  home: { azimuth: VIEW.azimuth, polar: VIEW.polar, zoom: 1 },
+  reset() {
+    if (reduceMotion) { rig.set(rig.home); return; }
+    resetFrom = rig.get();
+    resetStart = null;
+    loop();
+  },
+};
+let resetFrom = null, resetStart = null;
+
+function resize() {
+  const { width, height } = stage.getBoundingClientRect();
+  if (!width || !height) return;
+  const zoom = rig.get().zoom;
+  renderer.setSize(width, height, false);
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+  // fit a 14 × 11.2 box around the deck at any aspect ratio, so it stays in frame at every allowed angle
+  const t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const first = fitDistance === 30;
+  fitDistance = Math.max(5.6 / t, 7 / (t * camera.aspect));
+  // a drag across the stage should turn the deck by a similar amount on a phone as on a desktop
+  controls.rotateSpeed = 0.7 * clamp(height / 620, 0.4, 1);
+  controls.minDistance = fitDistance * VIEW.zoomIn;
+  controls.maxDistance = fitDistance * VIEW.zoomOut;
+  rig.set(first ? rig.home : { zoom });
+}
+new ResizeObserver(resize).observe(stage);
+
+// Scrolling over the model scrolls the page. Zoom is pinch, or Ctrl/⌘ + scroll (which is what a trackpad pinch sends).
+canvas.addEventListener('wheel', (e) => { if (!e.ctrlKey && !e.metaKey) e.stopImmediatePropagation(); }, { capture: true });
+canvas.addEventListener('dblclick', () => rig.reset());
+// Touch turns the deck sideways only: the tilt is held while fingers are down, so the start of a vertical
+// page scroll over the model can't nudge it. (Mouse and keyboard can still tilt.)
+const touches = new Set();
+let tiltRelease = 0;
+canvas.addEventListener('pointerdown', (e) => {
+  if (e.pointerType !== 'touch') return;
+  clearTimeout(tiltRelease);
+  if (!touches.size) controls.minPolarAngle = controls.maxPolarAngle = rig.get().polar;
+  touches.add(e.pointerId);
+});
+for (const type of ['pointerup', 'pointercancel']) {
+  canvas.addEventListener(type, (e) => {
+    if (!touches.delete(e.pointerId) || touches.size) return;
+    // release the tilt only after the drag's leftover momentum has died away
+    tiltRelease = setTimeout(() => {
+      controls.minPolarAngle = VIEW.polarMin;
+      controls.maxPolarAngle = VIEW.polarMax;
+    }, 900);
+  });
+}
+controls.addEventListener('start', () => { resetFrom = null; });
+controls.addEventListener('change', loop);
+
+stage.addEventListener('keydown', (e) => {
+  const v = rig.get();
+  const step = 0.14;
+  const moves = {
+    ArrowLeft: { azimuth: v.azimuth - step }, ArrowRight: { azimuth: v.azimuth + step },
+    ArrowUp: { polar: v.polar - step * 0.6 }, ArrowDown: { polar: v.polar + step * 0.6 },
+    '+': { zoom: v.zoom - 0.08 }, '=': { zoom: v.zoom - 0.08 }, '-': { zoom: v.zoom + 0.08 },
+  };
+  if (e.key === 'Home' || e.key === '0') rig.reset();
+  else if (moves[e.key]) { resetFrom = null; rig.set(moves[e.key]); }
+  else return;
+  e.preventDefault();
+});
+
+/* ── Load the model ────────────────────────────────────────────────── */
+new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).load('../public/models/cyberdeck-web.glb', (gltf) => {
+  const model = gltf.scene;
+  // The file is authored in very large units: fit the real vertex bounds to 10 units and centre it
+  const box = new THREE.Box3().setFromObject(model, true);
+  const size = box.getSize(new THREE.Vector3());
+  const s = 10 / Math.max(size.x, size.y, size.z);
+  model.scale.setScalar(s);
+  model.position.copy(box.getCenter(new THREE.Vector3()).multiplyScalar(-s));
+  norm.add(model);
+
+  model.traverse((o) => {
+    if (!o.isMesh) return;
+    if (o.name === 'crt_screen') {
+      o.material.dispose();
+      o.material = screenMat;
+      // the screen's glow sits just in front of the glass
+      norm.updateMatrixWorld(true);
+      const c = new THREE.Box3().setFromObject(o, true).getCenter(new THREE.Vector3());
+      norm.worldToLocal(c);
+      screenGlow.position.copy(c).add(new THREE.Vector3(0.7, -0.3, 0));
+      screenGlow.target.position.copy(c).add(new THREE.Vector3(2.6, -2.6, 0));
+    } else {
+      o.castShadow = true;
+      o.receiveShadow = true;
+    }
+  });
+  renderer.shadowMap.needsUpdate = true;
+  stage.classList.add('ready');
+  bootStart = null;
+  loop();
+}, undefined, (err) => {
+  note.textContent = 'The 3D model could not load.';
+  console.error(err);
+});
+
+/* ── Render loop: runs only while the deck is on screen and the tab is visible ── */
+let visible = true;
+new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; loop(); }).observe(stage);
+document.addEventListener('visibilitychange', loop);
+
+canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); stage.classList.remove('ready'); note.textContent = 'Restoring the 3D view…'; });
+canvas.addEventListener('webglcontextrestored', () => { renderer.shadowMap.needsUpdate = true; stage.classList.add('ready'); loop(); });
+
+let running = false;
+let lastScreen = 0;
+function frame(now) {
+  if (!visible || document.hidden) { running = false; return; }
+  if (!reduceMotion) requestAnimationFrame(frame);
+  if (resetFrom) {   // ease back to the default view (double-click or Home)
+    if (resetStart === null) resetStart = now;
+    const p = Math.min(1, (now - resetStart) / 450), e = 1 - Math.pow(1 - p, 3);
+    const from = resetFrom, to = rig.home;
+    const mix = (k) => from[k] + (to[k] - from[k]) * e;
+    if (p >= 1) resetFrom = null;
+    rig.set({ azimuth: mix('azimuth'), polar: mix('polar'), zoom: mix('zoom') });
+  }
+  if (controls.enabled) controls.update();
+  // the screen redraws at about 20 fps, plenty for a CRT and cheap on the GPU
+  if (reduceMotion || now - lastScreen > 50) { drawScreen(now); lastScreen = now; }
+  renderer.render(scene, camera);
+}
+function loop() {
+  if (running || !visible || document.hidden) return;
+  // reduced motion: nothing animates by itself, so draw one still frame whenever something changes
+  if (reduceMotion) { running = true; frame(performance.now()); running = false; return; }
+  running = true;
+  requestAnimationFrame(frame);
+}
+
+// redraw once the pixel font arrives (matters under reduced motion, where nothing redraws without a cause)
+document.fonts.ready.then(loop);
+resize();
+
+// for the browser tests, and the hook a later scroll timeline will use
+window.__deck = { rig, controls, camera, scene, renderer, screenMat };
+</script>
+</body>
+</html>

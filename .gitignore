@@ -8,3 +8,11 @@
 # Environment variables
 .env
 .env.*
+# Installed agent skills (reinstall from skills-lock.json)
+.agents/
+
+# Large 3D source files: kept local only. The site loads public/models/cyberdeck-web.glb
+source-assets/*.glb
+
+# Browser test output
+.playwright-cli/

@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sheetal Mannan — Computer Engineer</title>
+<meta name="description" content="Sheetal Mannan — computer engineer working across software, AI and hardware in Toronto.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Sheetal Mannan — Computer Engineer">
+<meta property="og:description" content="Computer engineer working across software, AI and hardware in Toronto.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:,">
+<script>
+  // Theme before first paint: a saved manual choice wins, otherwise the operating system's preference.
+  (function () {
+    var saved = null;
+    try { saved = localStorage.getItem('theme'); } catch (e) {}
+    var dark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&family=VT323&display=swap">
+<link rel="stylesheet" href="css/site.css">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js">
+<link rel="preload" href="../public/models/cyberdeck-web.glb" as="fetch" crossorigin>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+</head>
+<body>
+<a class="skip" href="#experience">Skip to content</a>
+
+<header class="nav" id="nav">
+  <a class="mark" href="#top" aria-label="Sheetal Mannan, back to top">SM</a>
+  <nav aria-label="Sections">
+    <ul class="nav-links" id="nav-links">
+      <li><a href="#top"><span>00</span>About</a></li>
+      <li><a href="#experience"><span>01</span>Experience</a></li>
+      <li><a href="#projects"><span>02</span>Projects</a></li>
+      <li><a href="#skills"><span>03</span>Skills</a></li>
+      <li><a href="#say-hi"><span>04</span>Say, hi</a></li>
+      <!-- Résumé: add <li><a href="resume.pdf">Résumé</a></li> here once the PDF exists -->
+    </ul>
+  </nav>
+  <button class="icon-btn theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark theme" aria-pressed="false">
+    <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg>
+    <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.2A8 8 0 0 1 9.8 4a8 8 0 1 0 10.2 10.2z"/></svg>
+  </button>
+  <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path class="bar-a" d="M4 8h16"/><path class="bar-b" d="M4 16h16"/></svg>
+  </button>
+</header>
+
+<main>
+  <!-- ── Hero: the cyberdeck. Scrolling flies the camera into its screen. ── -->
+  <!-- No element has id="top" on purpose: a link to #top then scrolls to the very top of the page,
+       which stays correct while this section is pinned. -->
+  <section class="hero" id="hero" data-spy="top" aria-labelledby="name">
+    <div class="stage" id="stage" tabindex="0" role="group" aria-describedby="deck-keys"
+         aria-label="Interactive 3D model of the SM-01 cyberdeck: a portable computer with a keyboard, two antennas and a teal screen showing a holographic portrait and the text hi, I'm Sheetal, computer engineer, Toronto">
+      <canvas id="deck" aria-hidden="true"></canvas>
+      <p class="note" id="note">booting…</p>
+    </div>
+    <p class="sr" id="deck-keys">Use the arrow keys to turn the model, plus and minus to zoom, and Home to reset the view.</p>
+
+    <div class="hero-copy" id="hero-copy">
+      <p class="label">computer engineer · software, AI &amp; hardware · Toronto</p>
+      <h1 id="name">Sheetal Mannan</h1>
+      <p class="intro">I'm a Computer Engineering grad from the University of Guelph (2026). I like building things that sit between code and circuits — AI/ML tools, applications, and the hardware they run on. I'm looking for new-grad roles in software, AI, and hardware engineering.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="#projects">View projects <span aria-hidden="true">→</span></a>
+        <a class="btn btn-ghost" href="https://www.linkedin.com/in/sheetal-mannan-6363371bb/" target="_blank" rel="noopener">LinkedIn</a>
+      </div>
+    </div>
+
+    <div class="hero-foot" id="hero-foot">
+      <p class="hint" aria-hidden="true"><span class="mouse">Drag to rotate · scroll to enter</span><span class="touch">Drag sideways to rotate · scroll to enter</span></p>
+      <p class="credit">3D model: <a href="https://sketchfab.com/3d-models/cyberdeck-eb82075a071c49aca7fc0e0ec619664c">“Cyberdeck”</a> by <a href="https://sketchfab.com/7chaner">7chaner</a>, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Modified.</p>
+    </div>
+
+    <!-- the moment of crossing the glass: the screen's colour and scanlines take over, then resolve into the page -->
+    <div class="veil" id="veil" aria-hidden="true"><i class="veil-signal"></i></div>
+  </section>
+
+  <!-- ── Inside the machine ── -->
+  <div class="inside" id="inside">
+    <svg class="circuit" id="circuit" aria-hidden="true" focusable="false"></svg>
+
+    <section class="section" id="experience" aria-labelledby="h-experience">
+      <header class="section-head" data-node="section">
+        <p class="label"><span class="idx">01</span> / experience</p>
+        <h2 id="h-experience">Experience</h2>
+      </header>
+      <ol class="timeline">
+        <li class="job" data-node="entry">
+          <p class="job-date">Jun – Dec 2024</p>
+          <div class="job-body">
+            <h3>AI/ML Software Developer</h3>
+            <p class="job-org">Seasia Infotech – MoogleLabs</p>
+            <p>Built FastAPI endpoints for client projects and pre-processed data for machine learning models, raising model training accuracy by 15%. Helped build a real-time face-filter detection app.</p>
+            <ul class="tags" aria-label="Technologies"><li>Python</li><li>FastAPI</li><li>Machine learning</li></ul>
+          </div>
+        </li>
+        <li class="job" data-node="entry">
+          <p class="job-date">May – Dec 2023</p>
+          <div class="job-body">
+            <h3>IT Analyst Intern</h3>
+            <p class="job-org">Toronto Transit Commission</p>
+            <p>Developed and maintained the Service Desk’s internal website, tracked incident resolution against SLAs, and managed Active Directory accounts.</p>
+            <ul class="tags" aria-label="Technologies"><li>Web development</li><li>Active Directory</li><li>SLA tracking</li></ul>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="section" id="projects" aria-labelledby="h-projects">
+      <header class="section-head" data-node="section">
+        <p class="label"><span class="idx">02</span> / projects</p>
+        <h2 id="h-projects">Projects</h2>
+        <p class="section-note">Eight builds across embedded systems, digital and mixed-signal design, robotics and machine learning.</p>
+      </header>
+
+      <article class="lead" id="p-utensil" aria-labelledby="t-utensil">
+        <div class="lead-main">
+          <p class="label"><span class="idx">P.01</span> / embedded systems · controls</p>
+          <h3 id="t-utensil">Self-Stabilizing Utensil for Parkinson's Disease Patients</h3>
+          <p>Real-time tremor-cancellation device using Python signal processing, I2C sensor integration, closed-loop PID control, and a custom PCB with EMC compliance.</p>
+        </div>
+        <dl class="spec">
+          <div><dt>Signal path</dt><dd>I2C sensors → Python signal processing → closed-loop PID</dd></div>
+          <div><dt>Hardware</dt><dd>Custom PCB, EMC compliant</dd></div>
+          <div><dt>Operation</dt><dd>Real-time tremor cancellation</dd></div>
+          <div><dt>Stack</dt><dd>Embedded Systems · PID Control · PCB Design · Python</dd></div>
+        </dl>
+      </article>
+
+      <ol class="ledger" start="2">
+        <li class="entry" id="p-dnn">
+          <p class="entry-meta"><span class="idx">P.02</span><span>FPGA · machine learning</span></p>
+          <div class="entry-body">
+            <h3>Deep Neural Network Accelerator on FPGA</h3>
+            <p>Fully-connected DNN in Verilog for MNIST digit classification (98% accuracy), integrated as an SoC with AXI4-Lite and an ARM processor.</p>
+            <ul class="tags" aria-label="Technologies"><li>FPGA</li><li>Verilog</li><li>Machine Learning</li></ul>
+          </div>
+          <p class="readout"><strong>98%</strong><span>MNIST classification accuracy</span></p>
+        </li>
+        <li class="entry" id="p-ecg">
+          <p class="entry-meta"><span class="idx">P.03</span><span>Mixed-signal IC</span></p>
+          <div class="entry-body">
+            <h3>Mixed-Signal IC Design — Smart Watch ECG Sensor</h3>
+            <p>Mixed-signal CMOS front-end (3:1 MUX, PGA, 6-bit SAR ADC) designed in TSMC 65nm using Cadence Virtuoso.</p>
+            <ul class="tags" aria-label="Technologies"><li>IC Design</li><li>Cadence Virtuoso</li><li>Mixed-Signal</li></ul>
+          </div>
+          <p class="readout"><strong>65 nm</strong><span>TSMC process · 6-bit SAR ADC</span></p>
+        </li>
+        <li class="entry" id="p-security">
+          <p class="entry-meta"><span class="idx">P.04</span><span>Real-time embedded</span></p>
+          <div class="entry-body">
+            <h3>Real-Time Home Security System</h3>
+            <p>FreeRTOS-based system with three concurrent tasks (motion detection, image capture, alerts); interrupt-driven PIR sensing, ArduCam, RTOS semaphores/queues, &lt;200ms response time.</p>
+            <ul class="tags" aria-label="Technologies"><li>FreeRTOS</li><li>Embedded Systems</li><li>Real-Time OS</li></ul>
+          </div>
+          <p class="readout"><strong>&lt;200 ms</strong><span>response time · 3 concurrent tasks</span></p>
+        </li>
+        <li class="entry" id="p-quadcopter">
+          <p class="entry-meta"><span class="idx">P.05</span><span>Robotics · vision</span></p>
+          <div class="entry-body">
+            <h3>Infrared Target Detection &amp; Aerial Response Quadcopter</h3>
+            <p>Autonomous quadcopter detecting 940nm IR sources and computing GPS coordinates; spiral waypoint navigation in Python, Raspberry Pi 4 + Cube Orange, 30%+ reduction in positional error.</p>
+            <ul class="tags" aria-label="Technologies"><li>Robotics</li><li>Computer Vision</li><li>Python</li></ul>
+          </div>
+          <p class="readout"><strong>30%+</strong><span>reduction in positional error</span></p>
+        </li>
+        <li class="entry" id="p-synth">
+          <p class="entry-meta"><span class="idx">P.06</span><span>FPGA · digital design</span></p>
+          <div class="entry-body">
+            <h3>Digital Waveform Synthesizer</h3>
+            <p>FPGA-based sine wave generator on a Nexys A7 board; VHDL, Xilinx Vivado, 89% execution-time reduction vs. a software-based approach.</p>
+            <ul class="tags" aria-label="Technologies"><li>FPGA</li><li>VHDL</li><li>Xilinx Vivado</li></ul>
+          </div>
+          <p class="readout"><strong>89%</strong><span>execution-time reduction vs. software</span></p>
+        </li>
+        <li class="entry" id="p-facial">
+          <p class="entry-meta"><span class="idx">P.07</span><span>Deep learning</span></p>
+          <div class="entry-body">
+            <h3>Deep Learning Facial Verification Model</h3>
+            <p>Siamese neural network for facial authentication, built with TensorFlow on the LFW dataset with custom training loops.</p>
+            <ul class="tags" aria-label="Technologies"><li>TensorFlow</li><li>Deep Learning</li><li>Computer Vision</li></ul>
+          </div>
+          <p class="readout"><strong>LFW</strong><span>dataset · Siamese network</span></p>
+        </li>
+        <li class="entry" id="p-counter">
+          <p class="entry-meta"><span class="idx">P.08</span><span>Full-custom IC</span></p>
+          <div class="entry-body">
+            <h3>Transistor-Level 8-bit Program Counter Design</h3>
+            <p>Full-custom static CMOS design (mux, adder, flip-flop register) built in Cadence Virtuoso.</p>
+            <ul class="tags" aria-label="Technologies"><li>IC Design</li><li>CMOS</li><li>Cadence Virtuoso</li></ul>
+          </div>
+          <p class="readout"><strong>8-bit</strong><span>static CMOS · transistor level</span></p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="section" id="skills" aria-labelledby="h-skills">
+      <header class="section-head" data-node="section">
+        <p class="label"><span class="idx">03</span> / skills</p>
+        <h2 id="h-skills">Technical skills</h2>
+        <p class="section-note">Each part on the board is one skill area. A marked skill links to a project that uses it.</p>
+      </header>
+      <div class="board-fig" id="board-fig">
+        <div class="callouts callouts-l">
+          <section data-part="0" class="domain d-hw" aria-labelledby="d-hw">
+            <p class="ref">U1 · FPGA</p>
+            <h3 id="d-hw"><span class="idx">A</span>Hardware &amp; digital design</h3>
+            <ul class="parts">
+              <li><a href="#p-synth">VHDL</a></li><li><a href="#p-dnn">Verilog</a></li><li><a href="#p-dnn">FPGA</a></li><li><a href="#p-synth">Xilinx Vivado</a></li><li><a href="#p-ecg">Cadence Virtuoso</a></li><li>ModelSim</li><li>Tcl</li>
+            </ul>
+          </section>
+          <section data-part="1" class="domain d-emb" aria-labelledby="d-emb">
+            <p class="ref">U2 · MCU</p>
+            <h3 id="d-emb"><span class="idx">B</span>Embedded systems &amp; controls</h3>
+            <ul class="parts">
+              <li>C</li><li>C++</li><li>ARM Cortex-M</li><li>STM32</li><li>Arduino</li><li>ESP32</li><li><a href="#p-quadcopter">Raspberry Pi</a></li><li><a href="#p-security">FreeRTOS</a></li><li>µC/OS-III</li><li><a href="#p-security">RTOS</a></li><li><a href="#p-utensil">I2C</a></li><li>SPI</li><li>UART</li><li>GPIO</li><li>PWM</li><li>MATLAB/Simulink</li>
+            </ul>
+          </section>
+        </div>
+        <figure class="board-stage" id="board-stage" role="img" aria-label="A circuit board, built in code, with one part for each skill area: an FPGA, a microcontroller, a Wi-Fi module, an AI accelerator and a JTAG debug header">
+          <canvas id="board" aria-hidden="true"></canvas>
+        </figure>
+        <div class="callouts callouts-r">
+          <section data-part="2" class="domain d-sw" aria-labelledby="d-sw">
+            <p class="ref">M1 · Wi-Fi module</p>
+            <h3 id="d-sw"><span class="idx">C</span>Software development</h3>
+            <ul class="parts">
+              <li><a href="#p-utensil">Python</a></li><li>Java</li><li>SQL</li><li>Bash</li><li>FastAPI</li><li>Flask</li><li>REST API</li><li>HTTP</li><li>Wi-Fi</li>
+            </ul>
+          </section>
+          <section data-part="3" class="domain d-ai" aria-labelledby="d-ai">
+            <p class="ref">U3 · Accelerator</p>
+            <h3 id="d-ai"><span class="idx">D</span>AI &amp; machine learning</h3>
+            <ul class="parts">
+              <li>PyTorch</li><li><a href="#p-facial">TensorFlow</a></li><li>NumPy</li><li>Pandas</li><li>OpenAI</li>
+            </ul>
+          </section>
+          <section data-part="4" class="domain d-tools" aria-labelledby="d-tools">
+            <p class="ref">J1 · JTAG header</p>
+            <h3 id="d-tools"><span class="idx">E</span>Engineering tools</h3>
+            <ul class="parts">
+              <li>Git</li><li>Docker</li><li>Linux</li><li>Eclipse</li><li>Jira</li>
+            </ul>
+          </section>
+        </div>
+        <svg class="leaders" id="leaders" aria-hidden="true"></svg>
+      </div>
+    </section>
+
+    <section class="section contact" id="say-hi" aria-labelledby="h-say-hi">
+      <div class="contact-copy">
+        <header class="section-head" data-node="section">
+          <p class="label"><span class="idx">04</span> / contact</p>
+          <h2 id="h-say-hi">Say, hi.</h2>
+        </header>
+        <p class="intro">Open to new-grad software, AI &amp; hardware roles.</p>
+        <ul class="contact-links">
+          <li><a href="mailto:ceng.sheetal.chd@gmail.com"><span class="label">Email</span><span class="contact-value">ceng.sheetal.chd@gmail.com</span></a></li>
+          <li><a href="https://www.linkedin.com/in/sheetal-mannan-6363371bb/" target="_blank" rel="noopener"><span class="label">LinkedIn</span><span class="contact-value">sheetal-mannan-6363371bb</span></a></li>
+          <!-- GitHub and Résumé: add rows here once the URL and the PDF exist -->
+        </ul>
+      </div>
+      <figure class="projector" id="projector" role="img" aria-label="A processor chip projecting a holographic portrait, the same figure shown on the cyberdeck's screen">
+        <canvas id="holo" aria-hidden="true"></canvas>
+        <div class="beam" aria-hidden="true"></div>
+        <svg class="chip" id="chip" viewBox="0 0 220 120" aria-hidden="true">
+          <g class="pins"><path d="M40 8v14M60 8v14M80 8v14M100 8v14M120 8v14M140 8v14M160 8v14M180 8v14M40 98v14M60 98v14M80 98v14M100 98v14M120 98v14M140 98v14M160 98v14M180 98v14M8 40h14M8 60h14M8 80h14M198 40h14M198 60h14M198 80h14"/></g>
+          <rect class="chip-body" x="22" y="22" width="176" height="76" rx="6"/>
+          <rect class="chip-die" x="74" y="38" width="72" height="44" rx="3"/>
+          <circle class="chip-dot" cx="36" cy="36" r="3"/>
+          <text x="110" y="64" text-anchor="middle">SM-01</text>
+        </svg>
+      </figure>
+    </section>
+
+    <footer class="foot">
+      <p>© 2026 Sheetal Mannan</p>
+      <a href="#top">Back to top ↑</a>
+    </footer>
+  </div>
+</main>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en" data-theme="a">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cyberdeck Prototype — Sheetal Mannan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&family=VT323&family=Unbounded:wght@400..700&family=Hanken+Grotesk:wght@400;500&family=JetBrains+Mono:wght@400;500&family=Pixelify+Sans:wght@400..600&display=swap">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<style>
+:root[data-theme="a"] {
+  --bg: #f3eee4; --surface: #e8e0cf; --text: #1f1b16; --muted: #5e554a;
+  --accent: #b4400f; --on-accent: #fff8ee; --line: rgba(31,27,22,0.18);
+  --grid: rgba(31,27,22,0.075); --grid-mark: rgba(31,27,22,0.28);
+  --f-display: "Archivo", sans-serif; --display-stretch: 125%; --display-weight: 750; --display-track: -0.02em;
+  --f-body: "IBM Plex Sans", sans-serif; --f-mono: "IBM Plex Mono", monospace;
+  color-scheme: light;
+}
+:root[data-theme="c"] {
+  --bg: #131517; --surface: #1d2023; --text: #ece9e2; --muted: #9da2a7;
+  --accent: #d4ff3a; --on-accent: #131517; --line: rgba(236,233,226,0.14);
+  --grid: rgba(236,233,226,0.055); --grid-mark: rgba(236,233,226,0.22);
+  --f-display: "Unbounded", sans-serif; --display-stretch: 100%; --display-weight: 600; --display-track: -0.02em;
+  --f-body: "Hanken Grotesk", sans-serif; --f-mono: "JetBrains Mono", monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(circle, var(--grid-mark) 1.6px, transparent 1.7px),
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 192px 192px, 48px 48px, 48px 48px;
+  background-position: -0.5px -0.5px, 0 0, 0 0;
+  color: var(--text);
+  font: 17px/1.6 var(--f-body);
+  transition: background-color 300ms ease-out, color 300ms ease-out;
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+.skip { position: absolute; left: 16px; top: -60px; padding: 10px 14px; background: var(--text); color: var(--bg); z-index: 10; }
+.skip:focus { top: 12px; }
+
+.nav {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; align-items: center; gap: 28px;
+  max-width: 1248px; margin: 0 auto; padding: 18px 24px;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(8px);
+}
+.mark {
+  position: relative; display: grid; place-items: center; width: 38px; height: 38px;
+  border: 1.5px solid var(--text); border-radius: 6px;
+  font: 600 13px var(--f-mono); text-decoration: none;
+}
+.mark::before, .mark::after {
+  content: ""; position: absolute; top: 9px; width: 5px; height: 1.5px; background: var(--text);
+  box-shadow: 0 8px 0 var(--text), 0 16px 0 var(--text);
+}
+.mark::before { left: -6px; }
+.mark::after { right: -6px; }
+.nav ul { display: flex; gap: 26px; margin: 0 0 0 auto; padding: 0; list-style: none; }
+.nav ul a {
+  display: inline-flex; align-items: center; min-height: 44px;
+  font: 500 13px var(--f-mono); letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none;
+}
+.nav ul a span { color: var(--muted); margin-right: 6px; }
+.nav ul a:hover { color: var(--accent); }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px;
+  border: 1.5px solid transparent; border-radius: 8px;
+  font: 500 15px var(--f-body); text-decoration: none; cursor: pointer;
+  transition: transform 160ms ease-out, background-color 160ms ease-out;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover { background: color-mix(in srgb, var(--accent) 86%, var(--text)); }
+.btn-ghost { border-color: var(--text); background: transparent; color: var(--text); }
+.btn-ghost:hover { background: color-mix(in srgb, var(--text) 8%, transparent); }
+
+.hero {
+  display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); align-items: center; gap: 24px;
+  max-width: 1248px; min-height: calc(100vh - 80px); margin: 0 auto; padding: 0 24px 72px;
+}
+.label {
+  margin: 0;
+  font: 500 12px/1.4 var(--f-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+}
+h1 {
+  margin: 16px 0 20px;
+  font-family: var(--f-display); font-weight: var(--display-weight);
+  font-stretch: var(--display-stretch); letter-spacing: var(--display-track);
+  font-size: clamp(48px, 6.4vw, 96px); line-height: 0.95;
+}
+.intro { margin: 0 0 30px; max-width: 470px; color: var(--muted); }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+.stage { position: relative; aspect-ratio: 1.12; width: 100%; }
+.stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; }
+.stage .fallback { position: absolute; inset: 0; display: none; place-items: center; text-align: center; font: 14px var(--f-mono); color: var(--muted); border: 1px dashed var(--line); border-radius: 12px; }
+.stage.no-gl .fallback { display: grid; }
+.stage .loading { position: absolute; left: 50%; top: 50%; translate: -50% -50%; font: 13px var(--f-mono); color: var(--muted); letter-spacing: 0.1em; }
+.stage.ready .loading { display: none; }
+
+.switch {
+  position: fixed; left: 50%; bottom: 20px; translate: -50% 0; z-index: 6;
+  display: flex; align-items: center; gap: 6px; padding: 6px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+.switch p { margin: 0 8px 0 12px; font: 500 11px var(--f-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.switch button {
+  min-height: 40px; padding: 0 16px; border: 0; border-radius: 999px; background: transparent; color: var(--text);
+  font: 500 14px var(--f-body); white-space: nowrap; cursor: pointer;
+}
+.switch button[aria-pressed="true"] { background: var(--text); color: var(--bg); }
+
+@media (max-width: 900px) {
+  .nav ul { display: none; }
+  .nav .btn { margin-left: auto; }
+  .hero { grid-template-columns: 1fr; min-height: 0; padding-top: 24px; padding-bottom: 120px; }
+  .switch p { display: none; }
+}
+@media (max-width: 520px) {
+  .nav, .hero { padding-left: 16px; padding-right: 16px; }
+  .switch button { min-width: 44px; padding: 0 14px; }
+  .switch .long { display: none; }
+  .switch p { display: block; margin-left: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body, .btn { transition: none; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <a class="mark" href="#main" aria-label="Sheetal Mannan, home">SM</a>
+  <ul>
+    <li><a href="#main"><span>01</span>projects</a></li>
+    <li><a href="#main"><span>02</span>experience</a></li>
+    <li><a href="#main"><span>03</span>skills</a></li>
+    <li><a href="#main"><span>04</span>say hi</a></li>
+  </ul>
+  <a class="btn btn-ghost" href="#main">Résumé</a>
+</header>
+
+<main id="main" class="hero">
+  <div>
+    <p class="label">computer engineer · software, AI &amp; hardware · Toronto</p>
+    <h1>Sheetal Mannan</h1>
+    <p class="intro">I'm a Computer Engineering grad from the University of Guelph (2026). I like building things that sit between code and circuits — AI/ML tools, applications, and the hardware they run on. I'm looking for new-grad roles in software, AI, and hardware engineering.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="#main">View projects →</a>
+      <a class="btn btn-ghost" href="https://www.linkedin.com/in/sheetal-mannan-6363371bb/" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </div>
+  <div class="stage" id="stage" role="img" aria-label="A 3D retro cyberdeck: a portable computer with a glowing CRT screen showing a pixel-art portrait of Sheetal and the text hi, I'm Sheetal">
+    <canvas id="deck" aria-hidden="true"></canvas>
+    <p class="loading">booting…</p>
+    <p class="fallback">3D preview needs WebGL.</p>
+  </div>
+</main>
+
+<div class="switch" role="group" aria-label="Palette direction">
+  <p>Direction</p>
+  <button type="button" data-theme="a" aria-pressed="true" aria-label="Direction A, Phosphor and Putty">A<span class="long"> · Phosphor &amp; Putty</span></button>
+  <button type="button" data-theme="c" aria-pressed="false" aria-label="Direction C, Graphite and Signal">C<span class="long"> · Graphite &amp; Signal</span></button>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+/* ── Palettes for the hardware ─────────────────────────────────────── */
+const THEMES = {
+  a: {
+    casing: '#cfc2a4', shade: '#b3a585', bezel: '#2a251f', keys: '#3a342c', legend: '#d9cfba',
+    keyAccent: '#e0661f', metal: '#b9b4aa', knob: '#2f2a24', led: '#ff7a1f',
+    crt: '#140f0a', phos: '#ffb000', phosDim: '#a86a00',
+    pixelFont: 'VT323', pixelSize: 46, shadow: 0.42, env: 0.55,
+  },
+  c: {
+    casing: '#2c2f33', shade: '#1e2023', bezel: '#0e0f10', keys: '#e6e2da', legend: '#55595e',
+    keyAccent: '#ff6a2b', metal: '#7b8086', knob: '#e6e2da', led: '#d4ff3a',
+    crt: '#080a0a', phos: '#d4ff3a', phosDim: '#7d9a1c',
+    pixelFont: 'Pixelify Sans', pixelSize: 34, shadow: 0.7, env: 0.7,
+  },
+};
+
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const stage = document.getElementById('stage');
+const canvas = document.getElementById('deck');
+
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+} catch (e) {
+  stage.classList.add('no-gl');
+  throw e;
+}
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.toneMapping = THREE.NeutralToneMapping;
+renderer.toneMappingExposure = 0.95;
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+const camera = new THREE.PerspectiveCamera(26, 1, 0.1, 400);
+const target = new THREE.Vector3(0, 9.5, 0);
+
+// Key light from upper left, soft fill from the right
+const key = new THREE.DirectionalLight(0xffffff, 1.15);
+key.position.set(-30, 40, 30);
+scene.add(key);
+const fill = new THREE.DirectionalLight(0xffffff, 0.35);
+fill.position.set(30, 10, 20);
+scene.add(fill);
+
+/* ── Materials (colours set by applyTheme) ─────────────────────────── */
+const M = {
+  casing: new THREE.MeshPhysicalMaterial({ roughness: 0.58, clearcoat: 0.25, clearcoatRoughness: 0.5 }),
+  shade: new THREE.MeshPhysicalMaterial({ roughness: 0.65 }),
+  bezel: new THREE.MeshStandardMaterial({ roughness: 0.5 }),
+  keys: new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.42, clearcoat: 0.3, clearcoatRoughness: 0.35 }),
+  keySolid: new THREE.MeshPhysicalMaterial({ roughness: 0.42, clearcoat: 0.3, clearcoatRoughness: 0.35 }),
+  keyAccent: new THREE.MeshPhysicalMaterial({ roughness: 0.42, clearcoat: 0.3, clearcoatRoughness: 0.35 }),
+  metal: new THREE.MeshStandardMaterial({ metalness: 0.9, roughness: 0.32 }),
+  knob: new THREE.MeshPhysicalMaterial({ roughness: 0.35, clearcoat: 0.6 }),
+  trackball: new THREE.MeshPhysicalMaterial({ color: 0x111111, roughness: 0.15, clearcoat: 1 }),
+  led: new THREE.MeshBasicMaterial({ toneMapped: false }),
+  dark: new THREE.MeshStandardMaterial({ color: 0x0b0b0b, roughness: 0.8 }),
+};
+
+const deck = new THREE.Group();
+scene.add(deck);
+
+const rbox = (w, h, d, r, seg = 4) => new RoundedBoxGeometry(w, h, d, seg, r);
+function add(geo, mat, x, y, z, parent = deck) {
+  const m = new THREE.Mesh(geo, mat);
+  m.position.set(x, y, z);
+  parent.add(m);
+  return m;
+}
+
+/* ── Base / keyboard deck ──────────────────────────────────────────── */
+const BASE_W = 34, BASE_H = 3.4, BASE_D = 22;
+add(rbox(BASE_W, BASE_H, BASE_D, 1.0, 5), M.casing, 0, BASE_H / 2, 0);
+// panel seam around the base
+add(rbox(BASE_W + 0.04, 0.12, BASE_D + 0.04, 0.06, 1), M.shade, 0, 1.25, 0);
+// rubber feet
+for (const [x, z] of [[-14, -8.5], [14, -8.5], [-14, 8.5], [14, 8.5]]) add(rbox(3, 0.5, 2, 0.24, 2), M.dark, x, 0.1, z);
+
+// keyboard well
+const WELL_X = -4.4, WELL_Z = 4.2;
+add(rbox(23.4, 0.5, 11.6, 0.35, 3), M.shade, WELL_X, BASE_H - 0.12, WELL_Z);
+
+// keys: one instanced mesh for every cap, instance colours pick out the accent key
+const keyGeo = rbox(1.48, 0.78, 1.48, 0.2, 3);
+const keyLayout = [];
+const rowCounts = [12, 12, 11, 10];
+rowCounts.forEach((n, r) => {
+  const pitch = 1.78;
+  const stagger = [0, 0.45, 0.9, 1.35][r];
+  const startX = WELL_X - 10.6 + stagger;
+  for (let i = 0; i < n; i++) keyLayout.push({ x: startX + i * pitch, z: WELL_Z - 4.4 + r * 1.85, accent: r === 3 && i === n - 1 });
+});
+const keyMesh = new THREE.InstancedMesh(keyGeo, M.keys, keyLayout.length);
+const dummy = new THREE.Object3D();
+keyLayout.forEach((k, i) => {
+  dummy.position.set(k.x, BASE_H + 0.42, k.z);
+  dummy.updateMatrix();
+  keyMesh.setMatrixAt(i, dummy.matrix);
+});
+deck.add(keyMesh);
+add(rbox(10.2, 0.78, 1.48, 0.2, 3), M.keySolid,WELL_X - 0.8, BASE_H + 0.42, WELL_Z - 4.4 + 4 * 1.85);
+
+// trackball module
+const tb = new THREE.Group();
+tb.position.set(12.0, BASE_H, 3.2);
+deck.add(tb);
+add(new THREE.CylinderGeometry(2.3, 2.5, 0.5, 48), M.shade, 0, 0.1, 0, tb);
+add(new THREE.TorusGeometry(1.75, 0.28, 16, 48), M.metal, 0, 0.35, 0, tb).rotation.x = Math.PI / 2;
+add(new THREE.SphereGeometry(1.55, 48, 32), M.trackball, 0, 0.55, 0, tb);
+// two mouse buttons under the trackball
+add(rbox(2.0, 0.6, 1.2, 0.22, 3), M.keySolid, 10.8, BASE_H + 0.25, 7.6);
+add(rbox(2.0, 0.6, 1.2, 0.22, 3), M.keyAccent, 13.2, BASE_H + 0.25, 7.6);
+
+// name plate
+const plateCanvas = document.createElement('canvas');
+plateCanvas.width = 448;
+plateCanvas.height = 112;
+const plateTex = new THREE.CanvasTexture(plateCanvas);
+plateTex.colorSpace = THREE.SRGBColorSpace;
+const plate = add(new THREE.PlaneGeometry(5.6, 1.4), new THREE.MeshStandardMaterial({ map: plateTex, roughness: 0.5, metalness: 0.2 }), 12.0, BASE_H + 0.02, -1.6);
+plate.rotation.x = -Math.PI / 2;
+
+// screws on the deck
+const screwGeo = new THREE.CylinderGeometry(0.34, 0.34, 0.14, 20);
+for (const [x, z] of [[-15.9, 9.9], [15.9, 9.9], [-15.9, -1.6], [15.9, -1.6]]) add(screwGeo, M.metal, x, BASE_H + 0.02, z);
+
+// carry rails on both sides
+for (const side of [-1, 1]) {
+  const x = side * (BASE_W / 2 + 1.5);
+  const bar = add(new THREE.CapsuleGeometry(0.5, 15, 8, 24), M.metal, x, 2.3, 0.5);
+  bar.rotation.x = Math.PI / 2;
+  for (const z of [-7, 8]) {
+    const post = add(new THREE.CylinderGeometry(0.42, 0.42, 1.6, 20), M.metal, side * (BASE_W / 2 + 0.7), 2.3, z);
+    post.rotation.z = Math.PI / 2;
+  }
+}
+
+/* ── Display unit (hinged at the back, tilted back) ────────────────── */
+const display = new THREE.Group();
+display.position.set(0, BASE_H + 0.5, -8.4);
+display.rotation.x = -0.16;
+deck.add(display);
+
+// hinge barrels
+for (const x of [-11, 0, 11]) {
+  const h = add(new THREE.CylinderGeometry(0.85, 0.85, x === 0 ? 6 : 3.2, 32), M.shade, x, 0, 0, display);
+  h.rotation.z = Math.PI / 2;
+}
+
+const HOUSE_W = 31, HOUSE_H = 19.5, HOUSE_D = 5.6;
+const HOUSE_Y = HOUSE_H / 2 - 0.2, FACE_Z = 0.4 + HOUSE_D / 2;
+add(rbox(HOUSE_W, HOUSE_H, HOUSE_D, 1.2, 5), M.casing, 0, HOUSE_Y, 0.4, display);
+// seam where the front shell meets the back shell
+add(rbox(HOUSE_W + 0.04, HOUSE_H + 0.04, 0.12, 1.2, 4), M.shade, 0, HOUSE_Y, -0.8, display);
+
+// CRT tail: a tapered back like an old tube monitor
+const tail = add(new THREE.CylinderGeometry(7.2, 10.5, 6.5, 4, 1), M.casing, -2.2, HOUSE_Y - 0.4, -5.3, display);
+tail.rotation.x = -Math.PI / 2;
+tail.rotation.y = Math.PI / 4;
+tail.scale.set(1.25, 1, 0.9);
+// vent slots on the tail top
+for (let i = 0; i < 6; i++) add(rbox(9, 0.12, 0.45, 0.06, 1), M.dark, -2.2, HOUSE_Y + 5.0, -3.2 - i * 0.8, display);
+
+// screen surround: casing shade ring, then black bezel, then the curved glass
+const SCREEN_X = -3.6, SCREEN_Y = HOUSE_Y + 0.2;
+const SW = 19.6, SH = 14.7;
+add(rbox(SW + 2.4, SH + 2.4, 0.5, 1.4, 4), M.shade, SCREEN_X, SCREEN_Y, FACE_Z, display);
+add(rbox(SW + 0.9, SH + 0.9, 0.5, 1.0, 4), M.bezel, SCREEN_X, SCREEN_Y, FACE_Z + 0.12, display);
+
+function curvedScreen(w, h, bulge) {
+  const g = new THREE.PlaneGeometry(w, h, 32, 24);
+  const p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const nx = p.getX(i) / (w / 2), ny = p.getY(i) / (h / 2);
+    p.setZ(i, bulge * (1 - nx * nx * 0.9) * (1 - ny * ny * 0.9));
+  }
+  g.computeVertexNormals();
+  return g;
+}
+const screenCanvas = document.createElement('canvas');
+screenCanvas.width = 768;
+screenCanvas.height = 576;
+const screenTex = new THREE.CanvasTexture(screenCanvas);
+screenTex.colorSpace = THREE.SRGBColorSpace;
+screenTex.anisotropy = 4;
+const screen = add(curvedScreen(SW, SH, 0.55), new THREE.MeshBasicMaterial({ map: screenTex, toneMapped: false }), SCREEN_X, SCREEN_Y, FACE_Z + 0.4, display);
+// glass: a faint reflective skin over the tube
+const glass = add(curvedScreen(SW, SH, 0.6), new THREE.MeshPhysicalMaterial({
+  color: 0xffffff, roughness: 0.04, metalness: 0, transparent: true, opacity: 0.1, envMapIntensity: 1.6,
+}), SCREEN_X, SCREEN_Y, FACE_Z + 0.42, display);
+
+// the screen casts a little light on the keyboard
+const screenGlow = new THREE.PointLight(0xffb000, 0, 34, 1.6);
+screenGlow.position.set(SCREEN_X, SCREEN_Y - 2, FACE_Z + 6);
+display.add(screenGlow);
+
+// right control column: speaker grille, two knobs, power switch, LEDs
+const COL_X = 10.6;
+const slotGeo = rbox(4.6, 0.32, 0.3, 0.14, 2);
+for (let i = 0; i < 9; i++) add(slotGeo, M.dark, COL_X, SCREEN_Y + 6.6 - i * 0.62, FACE_Z + 0.04, display);
+for (const [x, r] of [[COL_X - 1.3, 1.15], [COL_X + 1.6, 0.8]]) {
+  add(new THREE.CylinderGeometry(r + 0.25, r + 0.25, 0.25, 40), M.metal, x, SCREEN_Y - 2.2, FACE_Z + 0.12, display).rotation.x = Math.PI / 2;
+  const k = add(new THREE.CylinderGeometry(r * 0.92, r, 0.9, 40), M.knob, x, SCREEN_Y - 2.2, FACE_Z + 0.55, display);
+  k.rotation.x = Math.PI / 2;
+  add(rbox(0.16, r * 0.7, 0.1, 0.05, 1), M.metal, x, SCREEN_Y - 2.2 + r * 0.45, FACE_Z + 1.02, display);
+}
+const leds = [];
+for (let i = 0; i < 3; i++) {
+  leds.push(add(new THREE.SphereGeometry(0.26, 16, 12), i === 0 ? M.led : M.dark, COL_X - 1.6 + i * 1.0, SCREEN_Y - 5.6, FACE_Z + 0.1, display));
+}
+add(rbox(1.4, 0.8, 0.5, 0.18, 2), M.keySolid, COL_X + 1.8, SCREEN_Y - 5.6, FACE_Z + 0.2, display);
+
+// screws on the display face
+for (const [x, y] of [[-14.2, HOUSE_Y - 8.4], [14.2, HOUSE_Y - 8.4], [-14.2, HOUSE_Y + 8.4], [14.2, HOUSE_Y + 8.4]]) {
+  add(screwGeo, M.metal, x, y, FACE_Z + 0.02, display).rotation.x = Math.PI / 2;
+}
+
+// stubby antenna, top right
+add(new THREE.CylinderGeometry(0.7, 0.8, 0.8, 24), M.shade, 12.8, HOUSE_Y + HOUSE_H / 2 + 0.3, -0.6, display);
+add(new THREE.CylinderGeometry(0.16, 0.2, 6.5, 12), M.metal, 12.8, HOUSE_Y + HOUSE_H / 2 + 3.6, -0.6, display);
+const tip = add(new THREE.SphereGeometry(0.42, 16, 12), M.led, 12.8, HOUSE_Y + HOUSE_H / 2 + 6.9, -0.6, display);
+
+/* ── Soft contact shadow ───────────────────────────────────────────── */
+const shadowCanvas = document.createElement('canvas');
+shadowCanvas.width = shadowCanvas.height = 256;
+{
+  const c = shadowCanvas.getContext('2d');
+  const g = c.createRadialGradient(128, 128, 10, 128, 128, 128);
+  g.addColorStop(0, 'rgba(0,0,0,1)');
+  g.addColorStop(0.55, 'rgba(0,0,0,0.45)');
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  c.fillStyle = g;
+  c.fillRect(0, 0, 256, 256);
+}
+const shadowMat = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(shadowCanvas), transparent: true, depthWrite: false, opacity: 0.4 });
+const shadow = new THREE.Mesh(new THREE.PlaneGeometry(46, 30), shadowMat);
+shadow.rotation.x = -Math.PI / 2;
+shadow.position.y = -0.05;
+deck.add(shadow);
+
+/* ── Screen: SM-OS with the pixel avatar ───────────────────────────── */
+const AVATAR = [
+  '........hhhhhhhh........',
+  '......hhhhhhhhhhhh......',
+  '.....hhhhhhhhhhhhhh.....',
+  '....hhhhhhhsshhhhhhh....',
+  '....hhhhhhsssshhhhhh....',
+  '...hhhhhsssssssshhhhh...',
+  '...hhhhsssssssssshhhh...',
+  '...hhhhsseesseesshhhh...',
+  '...hhhhsssssssssshhhh...',
+  '...hhhhssssnnsssshhhh...',
+  '...hhhhssmssssmsshhhh...',
+  '...hhhhsssmmmmssshhhh...',
+  '...hhhhhsssssssshhhhh...',
+  '...hhhhhhsssssshhhhhh...',
+  '...hhhhhh.kkkk.hhhhhh...',
+  '...hhhhhh.kkkk.hhhhhh...',
+  '..hhhhhccckkkkccchhhhh..',
+  '.hhhhhcccccsscccccchhhh.',
+  '.hhhhcccccccccccccchhhh.',
+  'hhhhcccccccccccccccchhhh',
+  'hhhcccccccccccccccccchhh',
+  'hhcccccccccccccccccccchh',
+  'hcccccccccccccccccccccch',
+  'cccccccccccccccccccccccc',
+];
+const LINES = [
+  ['SM-OS v1.0', 1],
+  ['> boot ok', 0.65],
+  ['> hi, i\'m', 1],
+  ['  sheetal!', 1],
+  ['> computer', 0.75],
+  ['  engineer', 0.75],
+  ['> toronto', 0.75],
+];
+
+let theme = THEMES.a;
+const bootStart = performance.now();
+let blinkUntil = 0;
+let nextBlink = performance.now() + 2500;
+
+function pixelTone(ch, r, c, blinking) {
+  if (ch === 'h') return (r + c) % 2 === 0 ? 0.42 : 0.07;
+  if (ch === 's') return 1;
+  if (ch === 'k') return 0.75;
+  if (ch === 'n') return 0.5;
+  if (ch === 'c') return r % 2 === 0 ? 0.62 : 0.2;
+  if (ch === 'e') return blinking ? 1 : 0;
+  return 0;
+}
+
+function drawScreen(now) {
+  const ctx = screenCanvas.getContext('2d');
+  const W = screenCanvas.width, H = screenCanvas.height;
+  ctx.globalAlpha = 1;
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = theme.crt;
+  ctx.fillRect(0, 0, W, H);
+
+  // phosphor haze
+  const haze = ctx.createRadialGradient(W * 0.5, H * 0.45, 40, W * 0.5, H * 0.5, W * 0.7);
+  haze.addColorStop(0, theme.phos + '30');
+  haze.addColorStop(1, theme.phos + '00');
+  ctx.fillStyle = haze;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.shadowColor = theme.phos;
+  ctx.shadowBlur = 14;
+  ctx.fillStyle = theme.phos;
+  ctx.textBaseline = 'alphabetic';
+
+  // boot: lines type out over ~2 s (instant under reduced motion)
+  const elapsed = reduceMotion ? 1e9 : now - bootStart;
+  let budget = Math.floor(elapsed / 28);
+  const x0 = 52;
+  let y = 92;
+  const lh = theme.pixelSize * 1.32;
+  for (const [text, alpha] of LINES) {
+    if (budget <= 0) break;
+    const shown = text.slice(0, budget);
+    budget -= text.length + 4;
+    ctx.globalAlpha = alpha;
+    ctx.font = `${theme.pixelSize}px "${theme.pixelFont}"`;
+    ctx.fillText(shown, x0, y);
+    y += lh;
+  }
+  ctx.globalAlpha = 1;
+  if (budget > 0) {
+    const cursorOn = reduceMotion || Math.floor(now / 530) % 2 === 0;
+    ctx.font = `${theme.pixelSize}px "${theme.pixelFont}"`;
+    ctx.fillText('$', x0, H - 64);
+    if (cursorOn) ctx.fillRect(x0 + theme.pixelSize * 0.9, H - 64 - theme.pixelSize * 0.72, theme.pixelSize * 0.52, theme.pixelSize * 0.8);
+  }
+
+  // avatar fades in once the boot text is mostly there
+  const avatarAlpha = reduceMotion ? 1 : Math.min(1, Math.max(0, (elapsed - 900) / 600));
+  if (avatarAlpha > 0) {
+    if (!reduceMotion && now > nextBlink) { blinkUntil = now + 140; nextBlink = now + 3200 + Math.random() * 2400; }
+    const blinking = now < blinkUntil;
+    const px = 10;
+    const ax = W - 44 - 24 * px, ay = 120 + (reduceMotion ? 0 : Math.sin(now / 900) * 2);
+    ctx.shadowBlur = 10;
+    AVATAR.forEach((row, r) => {
+      [...row].forEach((ch, c) => {
+        const t = pixelTone(ch, r, c, blinking);
+        if (!t) return;
+        ctx.globalAlpha = t * avatarAlpha;
+        ctx.fillRect(ax + c * px, ay + r * px, px - 1.2, px - 1.2);
+      });
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  // scanlines, vignette and a faint rolling band
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(0,0,0,0.22)';
+  for (let sy = 0; sy < H; sy += 4) ctx.fillRect(0, sy, W, 1.5);
+  if (!reduceMotion) {
+    const band = ((now / 22) % (H + 160)) - 80;
+    const g = ctx.createLinearGradient(0, band - 60, 0, band + 60);
+    g.addColorStop(0, 'rgba(255,255,255,0)');
+    g.addColorStop(0.5, 'rgba(255,255,255,0.035)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, band - 60, W, 120);
+  }
+  const vig = ctx.createRadialGradient(W / 2, H / 2, H * 0.35, W / 2, H / 2, W * 0.68);
+  vig.addColorStop(0, 'rgba(0,0,0,0)');
+  vig.addColorStop(1, 'rgba(0,0,0,0.55)');
+  ctx.fillStyle = vig;
+  ctx.fillRect(0, 0, W, H);
+
+  screenTex.needsUpdate = true;
+}
+
+function drawPlate() {
+  const c = plateCanvas;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = theme.keys;
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.strokeStyle = theme.legend;
+  ctx.lineWidth = 4;
+  ctx.strokeRect(8, 8, c.width - 16, c.height - 16);
+  ctx.fillStyle = theme.legend;
+  ctx.font = '600 46px "IBM Plex Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('SM-01', c.width / 2, c.height / 2 + 2);
+  plateTex.needsUpdate = true;
+}
+
+/* ── Theme ─────────────────────────────────────────────────────────── */
+function applyTheme(id) {
+  theme = THEMES[id];
+  document.documentElement.dataset.theme = id;
+  M.casing.color.set(theme.casing);
+  M.shade.color.set(theme.shade);
+  M.bezel.color.set(theme.bezel);
+  M.metal.color.set(theme.metal);
+  M.knob.color.set(theme.knob);
+  M.led.color.set(theme.led);
+  M.keySolid.color.set(theme.keys);
+  M.keyAccent.color.set(theme.keyAccent);
+  const keyCol = new THREE.Color(theme.keys), accentCol = new THREE.Color(theme.keyAccent);
+  keyLayout.forEach((k, i) => keyMesh.setColorAt(i, k.accent ? accentCol : keyCol));
+  keyMesh.instanceColor.needsUpdate = true;
+  screenGlow.color.set(theme.phos);
+  screenGlow.intensity = id === 'c' ? 60 : 40;
+  scene.environmentIntensity = theme.env;
+  shadowMat.opacity = theme.shadow;
+  drawPlate();
+  document.querySelectorAll('.switch button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.theme === id)));
+  try { localStorage.setItem('deck-theme', id); } catch (e) {}
+}
+
+/* ── Framing and motion ────────────────────────────────────────────── */
+const BASE_YAW = -0.42;
+deck.rotation.y = BASE_YAW;
+const pointer = { x: 0, y: 0 };
+const current = { yaw: BASE_YAW, pitch: 0 };
+
+function resize() {
+  const { width, height } = stage.getBoundingClientRect();
+  renderer.setSize(width, height, false);
+  camera.aspect = width / height;
+  // fit a 46 × 32 box around the deck at any aspect ratio
+  const t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const dist = Math.max(15.5 / t, 23 / (t * camera.aspect));
+  const elev = THREE.MathUtils.degToRad(14);
+  camera.position.set(0, target.y + dist * Math.sin(elev), dist * Math.cos(elev));
+  camera.lookAt(target);
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stage);
+
+if (!reduceMotion) {
+  window.addEventListener('pointermove', (e) => {
+    pointer.x = (e.clientX / innerWidth) * 2 - 1;
+    pointer.y = (e.clientY / innerHeight) * 2 - 1;
+  }, { passive: true });
+}
+
+let visible = true;
+new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; if (visible) loop(); }).observe(stage);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) loop(); });
+
+let running = false;
+let lastScreen = 0;
+function frame(now) {
+  if (!visible || document.hidden) { running = false; return; }
+  requestAnimationFrame(frame);
+  if (!reduceMotion) {
+    const sway = Math.sin(now / 2600) * 0.035;
+    current.yaw += (BASE_YAW + pointer.x * 0.22 + sway - current.yaw) * 0.05;
+    current.pitch += (pointer.y * 0.06 - current.pitch) * 0.05;
+    deck.rotation.y = current.yaw;
+    deck.rotation.x = current.pitch;
+    const pulse = 0.5 + 0.5 * Math.sin(now / 700);
+    tip.scale.setScalar(0.85 + pulse * 0.25);
+    leds[0].visible = Math.floor(now / 1100) % 5 !== 0;
+  }
+  // the screen redraws at ~20 fps, plenty for a CRT and cheap on the GPU
+  if (now - lastScreen > 50) { drawScreen(now); lastScreen = now; }
+  renderer.render(scene, camera);
+}
+function loop() {
+  if (running) return;
+  running = true;
+  requestAnimationFrame(frame);
+}
+
+document.querySelectorAll('.switch button').forEach(b => b.addEventListener('click', () => applyTheme(b.dataset.theme)));
+
+let saved = new URLSearchParams(location.search).get('theme');
+try { saved = saved || localStorage.getItem('deck-theme') || 'a'; } catch (e) { saved = saved || 'a'; }
+// Start straight away; the screen redraws continuously, so it picks up the pixel fonts as soon as they arrive.
+applyTheme(THEMES[saved] ? saved : 'a');
+document.fonts.ready.then(drawPlate);
+resize();
+stage.classList.add('ready');
+loop();
+</script>
+</body>
+</html>

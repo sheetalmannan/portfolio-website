@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visual Directions — Sheetal Mannan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=VT323&family=Geist:wght@400..700&family=Geist+Mono:wght@400;500&family=Silkscreen&family=Unbounded:wght@400..700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Pixelify+Sans:wght@400..600&display=swap">
+<style>
+/* ── Board chrome (neutral, so each direction is judged on its own) ── */
+:root {
+  --board-bg: #f6f6f4;
+  --board-ink: #1a1a1a;
+  --board-muted: #5f5f5f;
+  --board-line: #dcdcd8;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--board-bg);
+  color: var(--board-ink);
+  font: 16px/1.55 "IBM Plex Sans", system-ui, sans-serif;
+}
+a { color: inherit; }
+:focus-visible { outline: 3px solid #1f45c4; outline-offset: 3px; }
+
+.board-head, .shared, .compare { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
+.board-head { padding-top: 56px; padding-bottom: 32px; }
+.eyebrow {
+  margin: 0 0 12px;
+  font: 500 12px/1 "IBM Plex Mono", monospace;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--board-muted);
+}
+.board-head h1 { margin: 0 0 12px; font: 700 clamp(32px, 4vw, 48px)/1.1 "Archivo", sans-serif; font-stretch: 112%; }
+.board-head p { margin: 0; max-width: 760px; color: var(--board-muted); }
+.jump { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+.jump a {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px;
+  border: 1px solid var(--board-line); border-radius: 999px; background: #fff;
+  text-decoration: none; font-weight: 500; font-size: 15px;
+}
+.jump a:hover { border-color: var(--board-ink); }
+
+h2.board-h { margin: 0 0 8px; font: 700 28px/1.2 "Archivo", sans-serif; font-stretch: 112%; }
+.shared { padding-top: 32px; padding-bottom: 56px; }
+.shared-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 16px; margin-top: 24px; }
+.rule-card { background: #fff; border: 1px solid var(--board-line); border-radius: 10px; padding: 20px 22px; }
+.rule-card h3 { margin: 0 0 10px; font: 500 12px/1 "IBM Plex Mono", monospace; letter-spacing: 0.14em; text-transform: uppercase; color: var(--board-muted); }
+.rule-card ul { margin: 0; padding-left: 18px; font-size: 15px; }
+.rule-card li + li { margin-top: 6px; }
+.rule-card code { font: 13px "IBM Plex Mono", monospace; background: #f0f0ec; padding: 1px 5px; border-radius: 4px; }
+
+/* ── A direction panel: everything inside reads its palette from these tokens ── */
+.dir {
+  --fine: 48px;
+  position: relative;
+  padding: 64px 0 72px;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(circle, var(--grid-mark) 1.6px, transparent 1.7px),
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: calc(var(--fine) * 4) calc(var(--fine) * 4), var(--fine) var(--fine), var(--fine) var(--fine);
+  background-position: -0.5px -0.5px, 0 0, 0 0;
+  color: var(--text);
+  font-family: var(--f-body);
+  border-top: 1px solid var(--board-line);
+}
+.dir-inner { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
+
+.dir[data-dir="a"] {
+  --bg: #f3eee4; --surface: #e8e0cf; --text: #1f1b16; --muted: #5e554a;
+  --accent: #b4400f; --on-accent: #fff8ee; --accent-2: #ffb000;
+  --grid: rgba(31,27,22,0.075); --grid-mark: rgba(31,27,22,0.28); --line: rgba(31,27,22,0.18);
+  --casing: #d6cbb5; --casing-shade: #b9ab92; --casing-line: #8f8269;
+  --key: #3a342c; --key-top: #4d463b; --key-accent: #e0661f; --key-legend: #d6cbb5;
+  --crt: #17130e; --phos: #ffb000; --holo: #ffc46b; --trace: #c08a4e; --pulse: #ffcf5a; --led: #e0661f;
+  --f-display: "Archivo", sans-serif; --display-stretch: 125%; --display-weight: 750; --display-track: -0.02em;
+  --f-body: "IBM Plex Sans", sans-serif; --f-mono: "IBM Plex Mono", monospace; --f-pixel: "VT323", monospace; --pixel-size: 1.25;
+}
+.dir[data-dir="b"] {
+  --bg: #eef1f4; --surface: #e1e6ec; --text: #0e1621; --muted: #4a5765;
+  --accent: #1f45c4; --on-accent: #ffffff; --accent-2: #ff5b1f;
+  --grid: rgba(14,22,33,0.07); --grid-mark: rgba(14,22,33,0.3); --line: rgba(14,22,33,0.16);
+  --casing: #e9ecee; --casing-shade: #c9ced3; --casing-line: #9aa3ac;
+  --key: #2a3038; --key-top: #39414b; --key-accent: #ff5b1f; --key-legend: #c9ced3;
+  --crt: #0b1418; --phos: #3ee6d0; --holo: #7fe9ff; --trace: #9fb1c2; --pulse: #00b8ff; --led: #3ee6d0;
+  --f-display: "Geist", sans-serif; --display-stretch: 100%; --display-weight: 650; --display-track: -0.035em;
+  --f-body: "Geist", sans-serif; --f-mono: "Geist Mono", monospace; --f-pixel: "Silkscreen", monospace; --pixel-size: 0.8;
+}
+.dir[data-dir="c"] {
+  --bg: #131517; --surface: #1d2023; --text: #ece9e2; --muted: #9da2a7;
+  --accent: #d4ff3a; --on-accent: #131517; --accent-2: #ff6a2b;
+  --grid: rgba(236,233,226,0.055); --grid-mark: rgba(236,233,226,0.22); --line: rgba(236,233,226,0.14);
+  --casing: #2b2e32; --casing-shade: #1f2225; --casing-line: #4a4f55;
+  --key: #e8e4dc; --key-top: #f6f3ec; --key-accent: #ff6a2b; --key-legend: #55595e;
+  --crt: #0a0c0d; --phos: #d4ff3a; --holo: #e2ff8a; --trace: #353a40; --pulse: #d4ff3a; --led: #ff6a2b;
+  --f-display: "Unbounded", sans-serif; --display-stretch: 100%; --display-weight: 600; --display-track: -0.02em;
+  --f-body: "Hanken Grotesk", sans-serif; --f-mono: "JetBrains Mono", monospace; --f-pixel: "Pixelify Sans", monospace; --pixel-size: 0.95;
+}
+
+/* Direction header */
+.dir-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px 32px; margin-bottom: 28px; }
+.label {
+  margin: 0;
+  font: 500 12px/1.2 var(--f-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.dir-head h2 {
+  margin: 8px 0 0;
+  font-family: var(--f-display);
+  font-weight: var(--display-weight);
+  font-stretch: var(--display-stretch);
+  letter-spacing: var(--display-track);
+  font-size: clamp(30px, 3.4vw, 44px);
+  line-height: 1.05;
+}
+.mood { margin: 8px 0 0; max-width: 560px; color: var(--muted); }
+
+/* Mock site: nav + hero */
+.mock {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  overflow: hidden;
+}
+.mock-nav {
+  display: flex; align-items: center; gap: 24px; padding: 14px 22px;
+  border-bottom: 1px solid var(--line);
+}
+.mark {
+  display: grid; place-items: center; width: 36px; height: 36px;
+  border: 1.5px solid var(--text); border-radius: 6px;
+  font: 600 13px var(--f-mono); position: relative;
+}
+.mark::before, .mark::after {
+  content: ""; position: absolute; width: 4px; height: 1.5px; background: var(--text);
+  top: 9px; box-shadow: 0 8px 0 var(--text), 0 16px 0 var(--text);
+}
+.mark::before { left: -5px; }
+.mark::after { right: -5px; }
+.mock-nav ul { display: flex; gap: 22px; margin: 0 0 0 auto; padding: 0; list-style: none; font: 500 13px var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; }
+.mock-nav li span { color: var(--muted); margin-right: 4px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px;
+  border-radius: 8px; font: 500 15px var(--f-body); text-decoration: none; cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: transform 160ms ease-out, background-color 160ms ease-out;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover { background: color-mix(in srgb, var(--accent) 86%, var(--text)); }
+.btn-ghost { border-color: var(--text); color: var(--text); background: transparent; }
+.btn-ghost:hover { background: color-mix(in srgb, var(--text) 8%, transparent); }
+
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 32px; align-items: center; padding: 48px 40px 44px; }
+.hero h3 {
+  margin: 14px 0 16px;
+  font-family: var(--f-display);
+  font-weight: var(--display-weight);
+  font-stretch: var(--display-stretch);
+  letter-spacing: var(--display-track);
+  font-size: clamp(40px, 5.4vw, 76px);
+  line-height: 0.95;
+}
+.hero p.lede { margin: 0 0 26px; max-width: 440px; font-size: 18px; line-height: 1.6; color: var(--muted); }
+.hero .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.deck svg { width: 100%; height: auto; display: block; }
+
+/* Swatches */
+.row { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
+.panel {
+  border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+}
+.panel > .label { margin-bottom: 16px; }
+.span-12 { grid-column: span 12; }
+.span-7 { grid-column: span 7; }
+.span-5 { grid-column: span 5; }
+.span-6 { grid-column: span 6; }
+.span-4 { grid-column: span 4; }
+.span-8 { grid-column: span 8; }
+
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
+.sw { margin: 0; font: 12px/1.35 var(--f-mono); }
+.sw .chip { height: 56px; border-radius: 8px; border: 1px solid var(--line); margin-bottom: 8px; }
+.sw b { display: block; font-weight: 500; color: var(--text); }
+.sw span { color: var(--muted); }
+
+.contrast { width: 100%; border-collapse: collapse; font: 13px var(--f-mono); }
+.contrast td { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.contrast td:nth-child(2) { width: 70px; }
+.contrast td:last-child { text-align: right; }
+.pair { display: inline-grid; place-items: center; width: 52px; height: 30px; border-radius: 6px; font: 600 14px var(--f-body); border: 1px solid var(--line); }
+.badge { display: inline-block; min-width: 44px; padding: 3px 7px; border-radius: 999px; font-size: 11px; text-align: center; background: var(--surface); color: var(--text); }
+.badge.fail { background: #b42318; color: #fff; }
+
+/* Type specimen */
+.spec-display {
+  margin: 0;
+  font-family: var(--f-display); font-weight: var(--display-weight);
+  font-stretch: var(--display-stretch); letter-spacing: var(--display-track);
+  font-size: clamp(34px, 4vw, 56px); line-height: 1;
+}
+.spec-h2 { margin: 18px 0 10px; display: flex; align-items: baseline; gap: 14px; font-family: var(--f-display); font-weight: var(--display-weight); font-stretch: var(--display-stretch); letter-spacing: var(--display-track); font-size: 28px; }
+.spec-h2 .idx { font: 500 13px var(--f-mono); letter-spacing: 0.12em; color: var(--accent); }
+.spec-body { margin: 0 0 14px; font-size: 17px; line-height: 1.65; max-width: 62ch; }
+.spec-meta { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 16px; font: 12px var(--f-mono); color: var(--muted); }
+.crt-chip {
+  display: inline-block; padding: 10px 14px; border-radius: 8px;
+  background: var(--crt); color: var(--phos);
+  font-family: var(--f-pixel); font-size: calc(22px * var(--pixel-size));
+  text-shadow: 0 0 8px color-mix(in srgb, var(--phos) 60%, transparent);
+}
+
+/* Project module */
+.module {
+  position: relative; border: 1px solid var(--line); border-radius: 12px; padding: 22px;
+  background: var(--surface);
+  transition: transform 180ms ease-out, border-color 180ms ease-out;
+}
+.module:hover { transform: translateY(-2px); border-color: var(--text); }
+.module-top { display: flex; justify-content: space-between; align-items: center; font: 500 12px var(--f-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.module-top .led { width: 8px; height: 8px; border-radius: 50%; background: var(--led); box-shadow: 0 0 8px var(--led); }
+.module h4 { margin: 18px 0 8px; font-family: var(--f-display); font-weight: var(--display-weight); font-stretch: var(--display-stretch); letter-spacing: var(--display-track); font-size: 24px; line-height: 1.1; }
+.module p { margin: 0 0 16px; font-size: 15.5px; line-height: 1.6; color: var(--muted); }
+.module .stat { display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px; }
+.module .stat b { font-family: var(--f-display); font-stretch: var(--display-stretch); font-weight: var(--display-weight); font-size: 34px; color: var(--accent); line-height: 1; }
+.module .stat span { font: 12px var(--f-mono); color: var(--muted); }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 18px; padding: 0; list-style: none; }
+.tags li { padding: 4px 9px; border: 1px solid var(--line); border-radius: 5px; font: 12px var(--f-mono); }
+.more { font: 500 14px var(--f-mono); color: var(--accent); text-decoration: none; }
+.more:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-btn {
+  min-height: 40px; padding: 0 14px; border: 1px solid var(--line); border-radius: 6px;
+  background: transparent; color: var(--text); font: 13px var(--f-mono); cursor: pointer;
+}
+.chip-btn[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+.chip-btn:hover { border-color: var(--text); }
+
+/* Circuit + hologram demos */
+.circuit svg, .holo svg { width: 100%; height: auto; display: block; }
+.trace-base { fill: none; stroke: var(--trace); stroke-width: 2; }
+.trace-pulse {
+  fill: none; stroke: var(--pulse); stroke-width: 3; stroke-linecap: round;
+  stroke-dasharray: 40 1400; stroke-dashoffset: 40;
+  filter: drop-shadow(0 0 4px var(--pulse));
+  animation: travel 4.5s linear infinite;
+}
+@keyframes travel { to { stroke-dashoffset: -1400; } }
+.trace-pulse.long { stroke-dasharray: 70 1800; stroke-dashoffset: 70; animation-name: travel-long; }
+@keyframes travel-long { to { stroke-dashoffset: -1800; } }
+.node circle { fill: var(--bg); stroke: var(--trace); stroke-width: 2; }
+.node .core { fill: var(--trace); stroke: none; }
+.node text { font: 500 11px var(--f-mono); letter-spacing: 0.1em; fill: var(--muted); text-transform: uppercase; }
+.node.lit circle { stroke: var(--pulse); }
+.node.lit .core { fill: var(--pulse); filter: drop-shadow(0 0 5px var(--pulse)); }
+.node.lit text { fill: var(--text); }
+
+.assess { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.assess h4 { margin: 0 0 8px; font: 500 12px var(--f-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.assess ul { margin: 0; padding-left: 18px; font-size: 15px; }
+.assess li + li { margin-top: 5px; }
+
+/* SVG deck parts read the same tokens */
+.k-case { fill: var(--casing); }
+.k-shade { fill: var(--casing-shade); }
+.k-line { fill: none; stroke: var(--casing-line); stroke-width: 1.5; }
+.k-key { fill: var(--key); }
+.k-key-top { fill: var(--key-top); }
+.k-accent { fill: var(--key-accent); }
+.k-crt { fill: var(--crt); }
+.k-led { fill: var(--led); }
+.k-screw { fill: var(--casing-shade); stroke: var(--casing-line); stroke-width: 1; }
+.k-px { fill: var(--phos); }
+.k-text { fill: var(--phos); font-family: var(--f-pixel); }
+.k-legend { fill: var(--key-legend); font: 600 9px var(--f-mono); letter-spacing: 0.1em; }
+.holo-px { fill: var(--holo); }
+.holo-wire { fill: none; stroke: var(--holo); stroke-width: 1; opacity: 0.45; }
+.cursor-blink { animation: blink 1.06s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.flicker { animation: flicker 5s infinite; }
+@keyframes flicker { 0%, 100% { opacity: 1; } 47% { opacity: 1; } 48% { opacity: 0.82; } 49% { opacity: 1; } 72% { opacity: 0.92; } 73% { opacity: 1; } }
+.bob { animation: bob 6s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-4px); } }
+
+/* Comparison */
+.compare { padding-top: 64px; padding-bottom: 96px; }
+.compare-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; border: 1px solid var(--board-line); border-radius: 10px; overflow: hidden; font-size: 15px; }
+.compare-table th, .compare-table td { padding: 14px 16px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--board-line); }
+.compare-table th { font: 500 12px "IBM Plex Mono", monospace; letter-spacing: 0.12em; text-transform: uppercase; color: var(--board-muted); background: #fafaf8; }
+.compare-table tr:last-child td { border-bottom: 0; }
+.verdict { margin-top: 24px; padding: 22px 24px; background: #fff; border: 1.5px solid var(--board-ink); border-radius: 10px; }
+.verdict h3 { margin: 0 0 8px; font: 700 20px "Archivo", sans-serif; font-stretch: 112%; }
+.verdict p { margin: 0 0 10px; }
+.verdict p:last-child { margin-bottom: 0; }
+.table-scroll { overflow-x: auto; }
+
+@media (max-width: 960px) {
+  .hero { grid-template-columns: 1fr; padding: 32px 22px; }
+  .span-7, .span-5, .span-6, .span-4, .span-8 { grid-column: span 12; }
+  .mock-nav ul { display: none; }
+  .mock-nav .btn { margin-left: auto; }
+}
+@media (max-width: 520px) {
+  .dir { --fine: 32px; padding: 44px 0 52px; }
+  .dir-inner, .board-head, .shared, .compare { padding-left: 16px; padding-right: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .trace-pulse, .cursor-blink, .flicker, .bob { animation: none; }
+  .trace-pulse { stroke-dasharray: none; opacity: 0.85; }
+  .btn, .module { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="board-head">
+  <p class="eyebrow">Phase 2 · Visual directions · for review</p>
+  <h1>Three directions for the engineering workstation</h1>
+  <p>Each panel below is drawn entirely in its own palette and type system: the same nav, hero, cyberdeck, project module, skill chips, circuit trace and contact hologram, so you're comparing like with like. Contrast ratios are calculated live from the actual colours. Nothing here is applied to the site yet.</p>
+  <nav class="jump" aria-label="Jump to">
+    <a href="#shared">Shared design language</a>
+    <a href="#dir-a">A · Phosphor &amp; Putty</a>
+    <a href="#dir-b">B · Lab White</a>
+    <a href="#dir-c">C · Graphite &amp; Signal</a>
+    <a href="#compare">Comparison &amp; recommendation</a>
+  </nav>
+</header>
+
+<section class="shared" id="shared">
+  <h2 class="board-h">Shared design language</h2>
+  <p style="margin:0;color:var(--board-muted);max-width:760px">These rules hold whichever palette you pick, so the decision is only about colour and type personality.</p>
+  <div class="shared-grid">
+    <div class="rule-card">
+      <h3>Grid &amp; layout</h3>
+      <ul>
+        <li>12 columns, 1200px max, 24px gutters, equal left/right edges.</li>
+        <li>Background: fine 48px grid with a crosshair dot every 4 cells (192px), so the dots line up with the columns.</li>
+        <li>Spacing scale <code>4 8 12 16 24 32 48 64 96 128</code>.</li>
+      </ul>
+    </div>
+    <div class="rule-card">
+      <h3>Type hierarchy</h3>
+      <ul>
+        <li>Display face for the name and section titles only.</li>
+        <li>Readable sans for paragraphs: case studies are long, so no all-mono body.</li>
+        <li>Mono for labels, tags, dates and indices: <code>12px · 0.14em · UPPERCASE</code>.</li>
+        <li>Pixel face appears <em>only</em> on the CRT and hologram.</li>
+      </ul>
+    </div>
+    <div class="rule-card">
+      <h3>Section labelling</h3>
+      <ul>
+        <li>Every section opens with <code>01 — ABOUT</code>-style index + title.</li>
+        <li>The index sits on a circuit node that lights when the section is in view, so the labels <em>are</em> the circuit.</li>
+        <li>Nav mirrors the indices, so recruiters can jump straight to any section.</li>
+      </ul>
+    </div>
+    <div class="rule-card">
+      <h3>Cyberdeck language</h3>
+      <ul>
+        <li>Two-part body: hinged CRT display over a wider keyboard deck (≈1.15×).</li>
+        <li>Chunky radii, corner screws, side handle rails, vent slots, two knobs.</li>
+        <li>Exactly <em>one</em> accent key and one status LED in the brand accent.</li>
+        <li>Screen runs "SM-OS": boot lines, pixel avatar that blinks, blinking cursor.</li>
+      </ul>
+    </div>
+    <div class="rule-card">
+      <h3>Motion rules</h3>
+      <ul>
+        <li>One signal pulse travels the traces; nodes light on arrival.</li>
+        <li>Hovers 150–200ms ease-out; buttons press to 0.97.</li>
+        <li>No scroll-jacking or snapping, and no fade-in on every block.</li>
+        <li>Reduced motion: traces shown fully lit and static, avatar still.</li>
+      </ul>
+    </div>
+    <div class="rule-card">
+      <h3>Narrative link</h3>
+      <ul>
+        <li>Hero: pixel avatar lives on the CRT.</li>
+        <li>Down the page: traces carry the signal between sections.</li>
+        <li>Contact: traces converge into a processor, which projects the same avatar as a fuller hologram.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div id="directions"></div>
+
+<section class="compare" id="compare">
+  <h2 class="board-h">Comparison &amp; recommendation</h2>
+  <div class="table-scroll">
+    <table class="compare-table">
+      <thead>
+        <tr><th scope="col"></th><th scope="col">A · Phosphor &amp; Putty</th><th scope="col">B · Lab White</th><th scope="col">C · Graphite &amp; Signal</th></tr>
+      </thead>
+      <tbody>
+        <tr><th scope="row">Feels like</th><td>A 1980s lab terminal restored by a product designer</td><td>A modern instrument maker's spec sheet</td><td>A contemporary hardware startup's launch page</td></tr>
+        <tr><th scope="row">Reference balance</th><td>Strongest edh.dev retro warmth, editorial layout</td><td>Strongest dotuniverse cleanliness, retro only on the screen</td><td>Dark like dotuniverse, but warm graphite instead of navy and neon</td></tr>
+        <tr><th scope="row">Hologram</th><td>Amber hologram glows best inside dark CRT and contact panels</td><td>Cyan reads as "hologram" instantly, but needs a dark panel to glow</td><td>Glows everywhere, which makes it the most dramatic hologram</td></tr>
+        <tr><th scope="row">Readability</th><td>Excellent: dark ink on warm paper</td><td>Excellent: crisp, but cooler and more clinical</td><td>Good, but long case studies on dark need care</td></tr>
+        <tr><th scope="row">Risk</th><td>Can tip into nostalgic or vintage if overdone</td><td>Can feel generic if the deck isn't strong</td><td>Closest to the "dark futuristic dashboard" you want to avoid</td></tr>
+        <tr><th scope="row">Stands out among CE portfolios</th><td>High: few engineering portfolios are warm and light</td><td>Medium</td><td>Medium–high</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="verdict">
+    <h3>My recommendation: A · Phosphor &amp; Putty</h3>
+    <p>It fits the brief best. "Retro computing + modern minimal" is literally a putty-coloured machine on a clean editorial page, and the amber CRT gives the one glowing, memorable thing on the screen. A light, warm page keeps your case studies easy to read for recruiters, and it's visibly different from the dark neon portfolios most engineers ship.</p>
+    <p>Its one weakness, a hologram on a light page, becomes a narrative feature: the contact section switches to the CRT's dark glass colour (the "inside the machine" moment), so the hologram glows exactly where the story needs it.</p>
+    <p>If you'd like more drama overall, C is the strong alternative. Mixing is also possible (for example A's page with B's cyan hologram), but I'd keep to one accent family.</p>
+  </div>
+</section>
+
+<script>
+/* Directions are generated from this data so the three panels stay structurally identical. */
+const DIRECTIONS = [
+  {
+    id: 'a', code: 'A', name: 'Phosphor & Putty', theme: 'Warm retro computing',
+    mood: 'Beige-putty casing and an amber phosphor CRT on warm paper. Copper traces carry an amber signal. Nostalgic hardware, presented with modern restraint.',
+    fonts: 'Archivo Expanded · IBM Plex Sans · IBM Plex Mono · VT323',
+    strengths: ['Most distinctive and personal of the three', 'Warm and approachable, like the scrapbook site, but professional', 'IBM Plex nods to classic computing without pastiche'],
+    risks: ['Too much beige reads as "vintage"; keep surfaces flat and type sharp', 'Amber is display-only and never used for text on the light page'],
+  },
+  {
+    id: 'b', code: 'B', name: 'Lab White', theme: 'Cool technical minimalism',
+    mood: 'A light-grey instrument with graphite keys and one orange key. A teal phosphor screen and a cyan hologram on a cool, blueprint-quiet page.',
+    fonts: 'Geist · Geist Mono · Silkscreen',
+    strengths: ['Cleanest and most "spec sheet"; reads as precise engineering', 'Cobalt links are very legible', 'Easy to keep consistent across many case-study pages'],
+    risks: ['Least personality; the cyberdeck must carry all of the character', 'Cool greys can feel corporate'],
+  },
+  {
+    id: 'c', code: 'C', name: 'Graphite & Signal', theme: 'Contemporary engineering',
+    mood: 'Anodised graphite with light keycaps and an orange function key. A chartreuse signal colour does the work of the beam, the screen and the hologram.',
+    fonts: 'Unbounded · Hanken Grotesk · JetBrains Mono · Pixelify Sans',
+    strengths: ['Most dramatic: traces, beam and hologram glow everywhere', 'Feels current, like modern hardware brands', 'Chartreuse is unusual and ownable'],
+    risks: ['Dark page edges toward the dashboard look you want to avoid', 'Long-form reading on dark needs generous size and spacing'],
+  },
+];
+
+const SWATCHES = [
+  ['Background', '--bg'], ['Surface', '--surface'], ['Text', '--text'], ['Text muted', '--muted'],
+  ['Accent · UI', '--accent'], ['Accent 2', '--accent-2'], ['Grid line', '--grid'],
+  ['Casing', '--casing'], ['Keys', '--key'], ['CRT glass', '--crt'], ['Phosphor', '--phos'],
+  ['Hologram', '--holo'], ['Trace', '--trace'], ['Signal pulse', '--pulse'],
+];
+
+const PAIRS = [
+  ['Body text on background', '--text', '--bg', 'Aa'],
+  ['Muted text on background', '--muted', '--bg', 'Aa'],
+  ['Muted text on surface', '--muted', '--surface', 'Aa'],
+  ['Accent link on background', '--accent', '--bg', 'Aa'],
+  ['Button text on accent', '--on-accent', '--accent', 'Aa'],
+  ['Phosphor on CRT glass', '--phos', '--crt', 'Aa'],
+  ['Hologram on CRT glass', '--holo', '--crt', 'Aa'],
+];
+
+/* Pixel portrait from the illustrated avatar: long dark hair with a centre part, falling past the shoulders.
+   24×24. h hair (dithered) · s skin · n nose · k neck · c top (scanline stripes) · e eyes · m mouth */
+const AVATAR = [
+  '........hhhhhhhh........',
+  '......hhhhhhhhhhhh......',
+  '.....hhhhhhhhhhhhhh.....',
+  '....hhhhhhhsshhhhhhh....',
+  '....hhhhhhsssshhhhhh....',
+  '...hhhhhsssssssshhhhh...',
+  '...hhhhsssssssssshhhh...',
+  '...hhhhsseesseesshhhh...',
+  '...hhhhsssssssssshhhh...',
+  '...hhhhssssnnsssshhhh...',
+  '...hhhhssmssssmsshhhh...',
+  '...hhhhsssmmmmssshhhh...',
+  '...hhhhhsssssssshhhhh...',
+  '...hhhhhhsssssshhhhhh...',
+  '...hhhhhh.kkkk.hhhhhh...',
+  '...hhhhhh.kkkk.hhhhhh...',
+  '..hhhhhccckkkkccchhhhh..',
+  '.hhhhhcccccsscccccchhhh.',
+  '.hhhhcccccccccccccchhhh.',
+  'hhhhcccccccccccccccchhhh',
+  'hhhcccccccccccccccccchhh',
+  'hhcccccccccccccccccccchh',
+  'hcccccccccccccccccccccch',
+  'cccccccccccccccccccccccc',
+];
+
+function tone(ch, r, c) {
+  if (ch === 'h') return (r + c) % 2 === 0 ? 0.42 : 0.07; // dark, dithered hair so the face reads
+  if (ch === 's') return 1;
+  if (ch === 'k') return 0.75;
+  if (ch === 'n') return 0.5;
+  if (ch === 'c') return r % 2 === 0 ? 0.62 : 0.2;          // scanline stripes on the top
+  return 0;
+}
+
+function avatarSVG(x, y, px, cls) {
+  let out = `<g class="avatar" transform="translate(${x} ${y})">`;
+  AVATAR.forEach((row, r) => {
+    [...row].forEach((ch, c) => {
+      const t = tone(ch, r, c);
+      if (t) {
+        out += `<rect class="${cls}" x="${c * px}" y="${r * px}" width="${px - 0.6}" height="${px - 0.6}" opacity="${t}"/>`;
+      } else if (ch === 'e') {
+        // eyes: empty until a blink fills them with skin tone
+        out += `<rect class="${cls} eye" x="${c * px}" y="${r * px}" width="${px - 0.6}" height="${px - 0.6}" opacity="0"/>`;
+      }
+    });
+  });
+  return out + '</g>';
+}
+
+function deckSVG(d) {
+  const keys = [];
+  const rows = [[14, 0], [13, 9], [12, 14], [10, 22]];
+  rows.forEach(([n, off], r) => {
+    for (let i = 0; i < n; i++) {
+      const x = 58 + off + i * 23, y = 300 + r * 17;
+      const accent = r === 3 && i === n - 1;
+      keys.push(`<rect class="k-key" x="${x}" y="${y}" width="20" height="14" rx="3"/><rect class="${accent ? 'k-accent' : 'k-key-top'}" x="${x + 2}" y="${y + 1}" width="16" height="10" rx="2"/>`);
+    }
+  });
+  // space bar
+  keys.push('<rect class="k-key" x="130" y="368" width="190" height="14" rx="3"/><rect class="k-key-top" x="132" y="369" width="186" height="10" rx="2"/>');
+  const vents = Array.from({ length: 7 }, (_, i) => `<rect class="k-shade" x="392" y="${70 + i * 12}" width="54" height="5" rx="2.5"/>`).join('');
+  return `
+<svg viewBox="0 0 520 420" role="img" aria-label="Illustration of the cyberdeck concept in the ${d.name} palette: a putty-style portable computer with a CRT screen showing a pixel-art portrait">
+  <defs>
+    <pattern id="scan-${d.id}" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="1.6" fill="#000" opacity="0.35"/></pattern>
+    <radialGradient id="glass-${d.id}" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="#fff" stop-opacity="0.10"/><stop offset="0.6" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    <filter id="glow-${d.id}" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <ellipse cx="262" cy="404" rx="236" ry="12" fill="#000" opacity="0.14"/>
+  <!-- side handle rails -->
+  <rect class="k-shade" x="14" y="236" width="20" height="152" rx="10"/>
+  <rect class="k-shade" x="486" y="236" width="20" height="152" rx="10"/>
+  <!-- display housing -->
+  <rect class="k-shade" x="58" y="22" width="404" height="238" rx="22"/>
+  <rect class="k-case" x="58" y="16" width="404" height="236" rx="22"/>
+  <rect class="k-line" x="70" y="28" width="380" height="212" rx="14"/>
+  <!-- CRT -->
+  <rect class="k-shade" x="84" y="40" width="292" height="190" rx="22"/>
+  <rect class="k-crt" x="92" y="47" width="276" height="176" rx="18"/>
+  <g filter="url(#glow-${d.id})" class="flicker">
+    <text class="k-text" x="112" y="80" font-size="${15 * d.px}">SM-OS v1.0</text>
+    <text class="k-text" x="112" y="104" font-size="${13 * d.px}" opacity="0.7">&gt; boot ok</text>
+    <text class="k-text" x="112" y="124" font-size="${13 * d.px}" opacity="0.7">&gt; hi, i'm sheetal</text>
+    <text class="k-text" x="112" y="144" font-size="${13 * d.px}" opacity="0.7">&gt; comp. engineer</text>
+    <text class="k-text" x="112" y="196" font-size="${15 * d.px}">$ <tspan class="cursor-blink">█</tspan></text>
+    ${avatarSVG(250, 78, 4.4, 'k-px')}
+  </g>
+  <rect x="92" y="47" width="276" height="176" rx="18" fill="url(#scan-${d.id})"/>
+  <rect x="92" y="47" width="276" height="176" rx="18" fill="url(#glass-${d.id})"/>
+  <!-- right control column -->
+  ${vents}
+  <circle class="k-shade" cx="404" cy="180" r="15"/><circle class="k-key" cx="404" cy="180" r="11"/><rect class="k-case" x="403" y="170" width="2" height="7"/>
+  <circle class="k-shade" cx="438" cy="180" r="10"/><circle class="k-key" cx="438" cy="180" r="7"/>
+  <circle class="k-led" cx="404" cy="214" r="4"/><circle class="k-shade" cx="420" cy="214" r="4"/><circle class="k-shade" cx="436" cy="214" r="4"/>
+  ${[[76, 34], [444, 34], [76, 234], [444, 234]].map(([x, y]) => `<circle class="k-screw" cx="${x}" cy="${y}" r="3.5"/>`).join('')}
+  <!-- hinge -->
+  <rect class="k-key" x="110" y="252" width="300" height="12" rx="4"/>
+  <!-- keyboard deck -->
+  <rect class="k-shade" x="30" y="270" width="460" height="124" rx="18"/>
+  <rect class="k-case" x="30" y="264" width="460" height="124" rx="18"/>
+  <rect class="k-line" x="46" y="290" width="344" height="98" rx="8"/>
+  ${keys.join('')}
+  <!-- trackball + plate -->
+  <circle class="k-shade" cx="438" cy="326" r="26"/><circle class="k-key" cx="438" cy="326" r="19"/><circle class="k-key-top" cx="432" cy="320" r="7" opacity="0.6"/>
+  <text class="k-legend" x="410" y="376">SM-01</text>
+  ${[[44, 278], [476, 278], [44, 376], [476, 376]].map(([x, y]) => `<circle class="k-screw" cx="${x}" cy="${y}" r="3.5"/>`).join('')}
+</svg>`;
+}
+
+function circuitSVG() {
+  const nodes = [[200, 45, 'About'], [440, 105, 'Experience'], [680, 45, 'Projects'], [920, 105, 'Skills'], [1120, 75, 'Contact']];
+  const path = 'M20 75 H80 L110 45 H300 L330 75 V105 H540 L570 75 V45 H780 L810 75 V105 H1020 L1050 75 H1180';
+  return `
+<svg viewBox="0 0 1200 150" role="img" aria-label="Circuit trace connecting the five sections, with a signal pulse travelling along it">
+  <path class="trace-base" d="M20 140 H1180" opacity="0.35" stroke-dasharray="2 6"/>
+  <path class="trace-base" d="${path}"/>
+  <path class="trace-pulse long" d="${path}"/>
+  ${nodes.map(([x, y, label], i) => `<g class="node"><circle cx="${x}" cy="${y}" r="9"/><circle class="core" cx="${x}" cy="${y}" r="4"/><text x="${x}" y="${y > 75 ? y + 30 : y - 20}" text-anchor="middle">0${i + 1} ${label}</text></g>`).join('')}
+</svg>`;
+}
+
+function holoSVG(d) {
+  const rings = [0, 1, 2, 3].map(i => `<ellipse class="holo-wire" cx="260" cy="${70 + i * 40}" rx="${[58, 70, 92, 104][i]}" ry="9"/>`).join('');
+  const pins = Array.from({ length: 9 }, (_, i) => {
+    const x = 196 + i * 16;
+    return `<rect class="k-shade" x="${x}" y="238" width="6" height="10"/><rect class="k-shade" x="${x}" y="300" width="6" height="10"/>`;
+  }).join('');
+  return `
+<svg viewBox="0 0 520 330" role="img" aria-label="Contact section concept: circuit traces converge into a processor that projects a holographic version of the pixel avatar">
+  <defs>
+    <linearGradient id="beam-${d.id}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="var(--holo)" stop-opacity="0.55"/><stop offset="1" stop-color="var(--holo)" stop-opacity="0"/></linearGradient>
+    <filter id="hglow-${d.id}" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="520" height="330" rx="14" fill="var(--crt)"/>
+  <!-- traces converging -->
+  <path class="trace-base" d="M0 274 H120 L150 262 H190"/><path class="trace-pulse" d="M0 274 H120 L150 262 H190"/>
+  <path class="trace-base" d="M0 300 H130 L160 288 H190"/>
+  <path class="trace-base" d="M520 274 H400 L370 262 H330"/><path class="trace-pulse" style="animation-delay:-2.2s" d="M520 274 H400 L370 262 H330"/>
+  <path class="trace-base" d="M520 300 H390 L360 288 H330"/>
+  <!-- beam -->
+  <polygon points="236,250 284,250 360,40 160,40" fill="url(#beam-${d.id})" opacity="0.5"/>
+  <!-- projection -->
+  <g class="bob" filter="url(#hglow-${d.id})">
+    ${rings}
+    ${avatarSVG(184, 38, 6.3, 'holo-px')}
+  </g>
+  <!-- processor -->
+  ${pins}
+  <rect class="k-shade" x="186" y="246" width="148" height="56" rx="6"/>
+  <rect class="k-key" x="190" y="248" width="140" height="52" rx="5"/>
+  <rect x="236" y="256" width="48" height="36" rx="3" fill="var(--holo)" opacity="0.9" filter="url(#hglow-${d.id})"/>
+  <text x="260" y="279" text-anchor="middle" font-family="var(--f-mono)" font-size="10" font-weight="600" fill="var(--crt)">SM-GPU</text>
+</svg>`;
+}
+
+function directionHTML(d) {
+  return `
+<section class="dir" data-dir="${d.id}" id="dir-${d.id}" aria-labelledby="t-${d.id}">
+  <div class="dir-inner">
+    <div class="dir-head">
+      <div>
+        <p class="label">Direction ${d.code} · ${d.theme}</p>
+        <h2 id="t-${d.id}">${d.name}</h2>
+        <p class="mood">${d.mood}</p>
+      </div>
+      <p class="label">${d.fonts}</p>
+    </div>
+
+    <div class="mock">
+      <div class="mock-nav">
+        <span class="mark" aria-hidden="true">SM</span>
+        <ul aria-label="Example navigation">
+          <li><span>01</span>About</li><li><span>02</span>Experience</li><li><span>03</span>Projects</li><li><span>04</span>Skills</li><li><span>05</span>Contact</li>
+        </ul>
+        <a class="btn btn-ghost" href="#compare">Résumé ↓</a>
+      </div>
+      <div class="hero">
+        <div>
+          <p class="label">Computer Engineer · Toronto</p>
+          <h3>Sheetal Mannan</h3>
+          <p class="lede">I build things that sit between code and circuits: AI/ML tools, applications, and the hardware they run on.</p>
+          <div class="actions">
+            <a class="btn btn-primary" href="#compare">View projects →</a>
+            <a class="btn btn-ghost" href="#compare">Download résumé</a>
+          </div>
+        </div>
+        <div class="deck">${deckSVG(d)}</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="panel span-7">
+        <p class="label">Palette</p>
+        <div class="swatches" data-swatches></div>
+      </div>
+      <div class="panel span-5">
+        <p class="label">Contrast · WCAG 2.1</p>
+        <table class="contrast" data-contrast></table>
+      </div>
+
+      <div class="panel span-7">
+        <p class="label">Typography</p>
+        <p class="spec-display">Code meets circuits.</p>
+        <p class="spec-h2"><span class="idx">03 —</span>Projects</p>
+        <p class="spec-body">Real-time tremor-cancellation device using Python signal processing, I2C sensor integration, closed-loop PID control, and a custom PCB with EMC compliance.</p>
+        <span class="crt-chip">&gt; hi, i'm sheetal_</span>
+        <div class="spec-meta"><span>Display · name &amp; titles</span><span>Sans · reading</span><span>Mono · labels</span><span>Pixel · screen only</span></div>
+      </div>
+      <div class="span-5" style="display:grid;gap:16px">
+        <article class="module">
+          <div class="module-top"><span>P/01 · Embedded</span><span class="led" aria-hidden="true"></span></div>
+          <h4>Self-Stabilizing Utensil</h4>
+          <div class="stat"><b>86%</b><span>tremor amplitude reduction*</span></div>
+          <p>Cancels Parkinson's tremor in real time with closed-loop PID and a custom PCB.</p>
+          <ul class="tags"><li>Python</li><li>PID</li><li>I2C</li><li>PCB</li></ul>
+          <a class="more" href="#compare">Read case study →</a>
+        </article>
+        <div class="panel">
+          <p class="label">Skill chips</p>
+          <div class="chips">
+            <button class="chip-btn" type="button" aria-pressed="true">Verilog</button>
+            <button class="chip-btn" type="button" aria-pressed="false">FPGA</button>
+            <button class="chip-btn" type="button" aria-pressed="false">FreeRTOS</button>
+            <button class="chip-btn" type="button" aria-pressed="false">PyTorch</button>
+            <button class="chip-btn" type="button" aria-pressed="false">Cadence</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel span-12 circuit">
+        <p class="label">Circuit narrative · signal pulse lights each section node</p>
+        ${circuitSVG()}
+      </div>
+      <div class="panel span-6 holo">
+        <p class="label">Contact · processor projects the hologram</p>
+        ${holoSVG(d)}
+      </div>
+
+      <div class="panel span-6">
+        <div class="assess">
+          <div><h4>Strengths</h4><ul>${d.strengths.map(s => `<li>${s}</li>`).join('')}</ul></div>
+          <div><h4>Watch-outs</h4><ul>${d.risks.map(s => `<li>${s}</li>`).join('')}</ul></div>
+          <div><h4>Note</h4><ul><li>*86% is from the original mockup copy; to be confirmed for the case study.</li><li>Avatar and deck are flat concept sketches. The real deck is 3D in Phase 3.</li></ul></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>`;
+}
+
+/* WCAG relative luminance, compositing translucent colours over the background */
+function parseColor(str) {
+  const probe = document.createElement('span');
+  probe.style.color = str;
+  document.body.appendChild(probe);
+  const m = getComputedStyle(probe).color.match(/[\d.]+/g).map(Number);
+  probe.remove();
+  return { r: m[0], g: m[1], b: m[2], a: m[3] ?? 1 };
+}
+function over(fg, bg) {
+  return { r: fg.r * fg.a + bg.r * (1 - fg.a), g: fg.g * fg.a + bg.g * (1 - fg.a), b: fg.b * fg.a + bg.b * (1 - fg.a), a: 1 };
+}
+function lum({ r, g, b }) {
+  const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+}
+function ratio(a, b) {
+  const la = lum(a), lb = lum(b);
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+}
+const hex = c => '#' + [c.r, c.g, c.b].map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
+
+const mount = document.getElementById('directions');
+mount.innerHTML = DIRECTIONS.map(d => directionHTML({ ...d, px: 1 })).join('');
+
+DIRECTIONS.forEach(d => {
+  const el = document.getElementById('dir-' + d.id);
+  const cs = getComputedStyle(el);
+  const v = name => cs.getPropertyValue(name).trim();
+  const bg = parseColor(v('--bg'));
+
+  // pixel fonts have very different x-heights; scale the screen text per direction
+  const px = parseFloat(v('--pixel-size')) || 1;
+  el.querySelectorAll('.deck .k-text').forEach(t => t.setAttribute('font-size', (parseFloat(t.getAttribute('font-size')) * px).toFixed(1)));
+
+  el.querySelector('[data-swatches]').innerHTML = SWATCHES.map(([label, prop]) => {
+    const raw = v(prop);
+    const c = parseColor(raw);
+    const shown = c.a < 1 ? `${hex(over(c, bg))} (${Math.round(c.a * 100)}% ink)` : hex(c);
+    return `<figure class="sw"><div class="chip" style="background:${raw}"></div><b>${label}</b><span>${shown}</span></figure>`;
+  }).join('');
+
+  el.querySelector('[data-contrast]').innerHTML = PAIRS.map(([label, fgP, bgP, sample]) => {
+    const fg = parseColor(v(fgP)), bk = parseColor(v(bgP));
+    const r = ratio(over(fg, bk), bk);
+    const grade = r >= 7 ? 'AAA' : r >= 4.5 ? 'AA' : r >= 3 ? 'AA large' : 'Fail';
+    return `<tr><td>${label}</td><td><span class="pair" style="color:${v(fgP)};background:${v(bgP)}">${sample}</span></td><td>${r.toFixed(2)} <span class="badge${grade === 'Fail' ? ' fail' : ''}">${grade}</span></td></tr>`;
+  }).join('');
+
+  // chips are live so the interaction can be felt
+  el.querySelectorAll('.chip-btn').forEach(btn => btn.addEventListener('click', () => {
+    el.querySelectorAll('.chip-btn').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+  }));
+});
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// circuit nodes light in sequence, in step with the pulse
+document.querySelectorAll('.circuit svg').forEach(svg => {
+  const nodes = svg.querySelectorAll('.node');
+  if (reduce) { nodes.forEach(n => n.classList.add('lit')); return; }
+  let i = 0;
+  setInterval(() => {
+    nodes.forEach((n, j) => n.classList.toggle('lit', j <= i));
+    i = (i + 1) % (nodes.length + 1);
+  }, 750);
+});
+
+// avatar blink
+if (!reduce) {
+  setInterval(() => {
+    document.querySelectorAll('.avatar .eye').forEach(e => e.setAttribute('opacity', '1'));
+    setTimeout(() => document.querySelectorAll('.avatar .eye').forEach(e => e.setAttribute('opacity', '0')), 140);
+  }, 3800);
+}
+</script>
+</body>
+</html>

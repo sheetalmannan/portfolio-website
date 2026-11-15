@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cyberdeck Model Preview</title>
+<style>
+  :root { --bg: #f3eee4; --ink: #1f1b16; --muted: #5d554a; --link: #b4400f; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #131517; --ink: #ece9e2; --muted: #a7a39b; --link: #d4ff3a; } }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 14px/1.5 system-ui, sans-serif; }
+  canvas { display: block; width: 100%; height: calc(100% - 48px); }
+  footer { height: 48px; display: flex; align-items: center; padding: 0 16px; color: var(--muted); font-size: 12px; }
+  footer a { color: var(--link); }
+  #status { position: absolute; top: 16px; left: 16px; font: 12px/1 ui-monospace, monospace; letter-spacing: .14em; text-transform: uppercase; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="status">loading model…</div>
+<canvas id="c" aria-label="3D cyberdeck model"></canvas>
+<footer>
+  <p class="credit">3D model: <a href="https://sketchfab.com/3d-models/cyberdeck-eb82075a071c49aca7fc0e0ec619664c">“Cyberdeck”</a>
+  by <a href="https://sketchfab.com/7chaner">7chaner</a>,
+  licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Modified.</p>
+</footer>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ?debug colours each part so the screen mesh can be identified; ?yaw=deg / ?pitch=deg set the view
+const q = new URLSearchParams(location.search);
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.toneMapping = THREE.NeutralToneMapping;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue('--bg').trim());
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 1000);
+const controls = new OrbitControls(camera, canvas);
+
+const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+loader.load('../public/models/cyberdeck-web.glb', (gltf) => {
+  const model = gltf.scene;
+  const palette = [0xe6194b, 0x3cb44b, 0x4363d8, 0xf58231, 0x911eb4, 0x42d4f4];
+  let i = 0;
+  model.traverse((o) => {
+    if (!o.isMesh) return;
+    if (q.has('debug')) o.material = new THREE.MeshStandardMaterial({ color: palette[i % 6] });
+    console.log('mesh', i, o.name, new THREE.Box3().setFromObject(o).getSize(new THREE.Vector3()).toArray().map(n => n.toFixed(2)).join(' x '));
+    i++;
+  });
+  // The file is authored in very large units; normalise to a 10-unit-wide object centred at the origin
+  const raw = new THREE.Box3().setFromObject(model);
+  const rawSize = raw.getSize(new THREE.Vector3());
+  console.log('raw size', rawSize.toArray().map(n => n.toFixed(1)).join(' x '));
+  const s = 10 / Math.max(rawSize.x, rawSize.y, rawSize.z);
+  model.scale.multiplyScalar(s);
+  model.position.sub(raw.getCenter(new THREE.Vector3()).multiplyScalar(s));
+  const root = new THREE.Group();
+  root.add(model);
+  scene.add(root);
+  const box = new THREE.Box3().setFromObject(root);
+  const size = box.getSize(new THREE.Vector3()), center = box.getCenter(new THREE.Vector3());
+  const r = size.length() * 0.5;
+  const yaw = THREE.MathUtils.degToRad(+(q.get('yaw') ?? 30)), pitch = THREE.MathUtils.degToRad(+(q.get('pitch') ?? 25));
+  const dist = r / Math.sin(THREE.MathUtils.degToRad(15));
+  camera.position.set(center.x + dist * Math.cos(pitch) * Math.sin(yaw), center.y + dist * Math.sin(pitch), center.z + dist * Math.cos(pitch) * Math.cos(yaw));
+  controls.target.copy(center);
+  controls.update();
+  console.log('model size', size.toArray().map(n => n.toFixed(2)).join(' x '));
+  document.getElementById('status').textContent = 'drag to orbit';
+}, undefined, (err) => { document.getElementById('status').textContent = 'failed to load model'; console.error(err); });
+
+function resize() {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+resize();
+renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
+</script>
+</body>
+</html>
