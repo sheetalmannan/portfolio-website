@@ -2,8 +2,6 @@
 
 ## What's in this folder
 - `assets/` — the final images used in the mockup
-  - `avatar.png` (round avatar above the name)
-  - `grad-photo.jpg` (polaroid in the intro)
   - `pcb.png`, `oscilloscope.png`, `laptop.png`, `raspberry.png` (white crayon doodles, transparent backgrounds)
   - `sparkle.webp` (looping animated sparkle, transparent)
 - `reference/design-mockup.html` — the mockup's source. It uses a design-tool format
