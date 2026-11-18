@@ -16,3 +16,6 @@ source-assets/*.glb
 
 # Browser test output
 .playwright-cli/
+
+# Identifiable source photo for the portrait: the site only ships the anonymised site/img/portrait.png
+source-assets/portrait-source.png

@@ -7,16 +7,45 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 const MODEL_URL = '../public/models/cyberdeck-web.glb';
-// The portrait is one replaceable image. Any shoulders-up picture works: the shader turns it into teal phosphor.
-export const PORTRAIT_URL = 'img/portrait.png';
+// The portrait is one replaceable image: a shoulders-up picture on black (or with alpha), ideally square and
+// 1024 px or more. Colour is ignored; the shader renders its luminance as teal phosphor.
+// To try a candidate without replacing the file: ?portrait=img/candidate.png (same-site relative paths only).
+function portraitUrl() {
+  const q = new URLSearchParams(location.search).get('portrait');
+  return q && /^(?!\/)[\w./-]+\.(png|jpe?g|webp)$/i.test(q) ? q : 'img/portrait.png';
+}
+export const PORTRAIT_URL = portraitUrl();
+
+// The signal disturbance, shared timing for anything that shows the portrait. About every two seconds:
+// stable → a brief slip (glitch) → the picture is left degraded → a sweep line rebuilds it (recon 0→1) → stable.
+export function portraitSignal(seconds) {
+  const PERIOD = 2, n = Math.floor(seconds / PERIOD), t = seconds - n * PERIOD;
+  const jitter = Math.abs(Math.sin(n * 12.9898) * 43758.5453) % 1;     // each cycle starts slightly differently
+  const g0 = 1.3 + 0.2 * jitter, GLITCH = 0.17, r0 = g0 + 0.12, RECON = 0.36;
+  const x = (t - g0) / GLITCH;
+  const glitch = x > 0 && x < 1 ? Math.sin(Math.PI * Math.pow(x, 0.6)) : 0;   // quick attack, softer release
+  const y = (t - r0) / RECON;
+  const eased = y < 0.5 ? 4 * y * y * y : 1 - Math.pow(-2 * y + 2, 3) / 2;
+  const active = t > g0 && y < 1;
+  return {
+    glitch,
+    degrade: active ? Math.min(1, Math.max(0, x / 0.35)) : 0,
+    recon: !active ? 2 : y <= 0 ? -0.06 : -0.06 + eased * 1.16,
+  };
+}
 
 const PHOSPHOR = '#5dffc1';   // sampled from the deck's small left display
 const VIEW = {
   azimuth: 0.52, polar: 1.27, azimuthRange: 1.2, polarMin: 0.82, polarMax: 1.5, zoomIn: 0.82, zoomOut: 1.2,
   target: new THREE.Vector3(0, -0.75, 0),
 };
-// Where the portrait sits on the screen, in screen UVs (x, y, width, height); v runs top to bottom
-const PORTRAIT_RECT = new THREE.Vector4(0.655, 0.04, 0.318, 0.92);
+// Where the portrait window sits on the screen, in screen UVs (x, y, width, height); v runs top to bottom
+const PORTRAIT_RECT = new THREE.Vector4(0.5, 0.04, 0.475, 0.92);
+// How the image is framed in that window. Adjust these three numbers when the portrait file is replaced:
+// zoom (1 = the image's full width fills the window; below 1 shows the whole figure with black at the sides), the face's centre in the image (x, y from the top-left,
+// 0 to 1), and where across the window that centre sits. A tight crop keeps the face large, as on a close-up.
+export const PORTRAIT_FRAME = { zoom: 0.72, x: 0.5, y: 0.515, at: 0.5 };
+const RASTER_COLUMNS = 92;   // vertical phosphor lines across the window
 
 const LINES = [
   ['SM-OS v1.0 · boot ok', 0.65],
@@ -102,14 +131,21 @@ export function createDeck({ stage, canvas, note, reduceMotion }) {
   const uniforms = {
     uPortrait: { value: null }, uPortraitAspect: { value: 1 }, uHasPortrait: { value: 0 },
     uRect: { value: PORTRAIT_RECT }, uScreenAspect: { value: 2.89 },
+    uFrame: { value: new THREE.Vector4(PORTRAIT_FRAME.zoom, PORTRAIT_FRAME.x, PORTRAIT_FRAME.y, PORTRAIT_FRAME.at) },
+    uCols: { value: RASTER_COLUMNS }, uLod: { value: 2.5 },
     uPhos: { value: new THREE.Color(PHOSPHOR) },
-    uTime: { value: 0 }, uGlitch: { value: 0 }, uRecon: { value: 2 }, uScan: { value: 0.12 }, uGain: { value: 1 },
+    uTime: { value: 0 }, uGlitch: { value: 0 }, uDegrade: { value: 0 }, uRecon: { value: 2 }, uScan: { value: 0.12 }, uGain: { value: 1 },
   };
   new THREE.TextureLoader().load(PORTRAIT_URL, (tex) => {
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 8;
     uniforms.uPortrait.value = tex;
-    uniforms.uPortraitAspect.value = tex.image.width / tex.image.height;
+    const aspect = tex.image.width / tex.image.height;
+    const boxAspect = PORTRAIT_RECT.z * 2.89 / PORTRAIT_RECT.w;
+    uniforms.uPortraitAspect.value = aspect;
+    // the mip level at which one raster cell covers about one texel, so each phosphor line reads one clean sample
+    const across = tex.image.width * Math.min(1, boxAspect / aspect) / uniforms.uFrame.value.x;
+    uniforms.uLod.value = Math.max(0, Math.log2(across / RASTER_COLUMNS));
     uniforms.uHasPortrait.value = 1;
     requestRender();
   });
@@ -123,38 +159,89 @@ export function createDeck({ stage, canvas, note, reduceMotion }) {
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', /* glsl */`#include <common>
         uniform sampler2D uPortrait;
-        uniform float uPortraitAspect, uHasPortrait, uScreenAspect, uTime, uGlitch, uRecon, uScan, uGain;
-        uniform vec4 uRect;
+        uniform float uPortraitAspect, uHasPortrait, uScreenAspect, uTime, uGlitch, uDegrade, uRecon, uScan, uGain, uCols, uLod;
+        uniform vec4 uRect, uFrame;
         uniform vec3 uPhos;
         float sHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-        float pLum(vec2 uv) { return pow(dot(texture2D(uPortrait, uv).rgb, vec3(0.299, 0.587, 0.114)), 0.55); }`)
+        // the portrait's luminance at an explicit mip level, with a hard black floor so the screen stays dark
+        float pLum(vec2 uv, float lod) {
+          vec4 t = textureLod(uPortrait, uv, max(lod, 0.0));
+          float inside = step(0.0, uv.x) * step(uv.x, 1.0) * step(0.0, uv.y) * step(uv.y, 1.0);
+          return smoothstep(0.05, 0.92, pow(dot(t.rgb, vec3(0.299, 0.587, 0.114)) * t.a * inside, 0.85));
+        }
+        // window position → image uv, through the framing (zoom, focus point, where the focus sits)
+        vec2 pMap(vec2 pc, vec2 fit) {
+          return vec2(uFrame.y + (pc.x - uFrame.w) * fit.x / uFrame.x, 1.0 - (uFrame.z + (pc.y - 0.5) * fit.y / uFrame.x));
+        }
+        float pLine(float v) { float d = abs(fract(v) - 0.5); return 1.0 - smoothstep(0.0, fwidth(v) * 1.3 + 0.012, d); }`)
       .replace('#include <emissivemap_fragment>', /* glsl */`
         vec2 suv = vEmissiveMapUv;
-        // signal disturbance: some horizontal bands slip sideways for a moment
-        float band = floor(suv.y * 42.0);
-        float tick = floor(uTime * 28.0);
-        float pick = step(0.5, sHash(vec2(band * 1.7, tick)));
-        float shift = (sHash(vec2(band, tick)) - 0.5) * 0.05 * uGlitch * pick;
-        vec3 crt = texture2D(emissiveMap, vec2(suv.x + shift * 0.3, suv.y)).rgb;
-        vec2 pc = (vec2(suv.x + shift, suv.y) - uRect.xy) / uRect.zw;
-        if (uHasPortrait > 0.5 && pc.x > 0.0 && pc.x < 1.0 && pc.y > 0.0 && pc.y < 1.0) {
-          // fit the image to the box like object-fit: cover
-          vec2 q = pc - 0.5;
+        // the boot text keeps its original faint slip during a disturbance
+        float tBand = floor(suv.y * 42.0), tTick = floor(uTime * 30.0);
+        float tSlip = (sHash(vec2(tBand, tTick)) - 0.5) * 0.015 * uGlitch * step(0.5, sHash(vec2(tBand * 1.7, tTick)));
+        vec3 crt = texture2D(emissiveMap, vec2(suv.x + tSlip, suv.y)).rgb;
+        vec2 pc0 = (suv - uRect.xy) / uRect.zw;   // position inside the portrait window, y running down
+        if (uHasPortrait > 0.5 && pc0.x > 0.0 && pc0.x < 1.0 && pc0.y > 0.0 && pc0.y < 1.0) {
           float boxAspect = uRect.z * uScreenAspect / uRect.w;
-          if (uPortraitAspect > boxAspect) q.x *= boxAspect / uPortraitAspect; else q.y *= uPortraitAspect / boxAspect;
-          vec2 puv = vec2(q.x + 0.5, 0.5 - q.y);
-          float l = smoothstep(0.03, 0.92, pLum(puv));
-          float edge = clamp(length(vec2(pLum(puv + vec2(0.004, 0.0)), pLum(puv + vec2(0.0, 0.004))) - pLum(puv)) * 7.0, 0.0, 1.0);
-          // reconstruction: contour rows lifted by brightness, over a faint measuring grid
-          float rows = fract(pc.y * 64.0 - l * 1.6);
-          float wire = (1.0 - smoothstep(0.0, 0.22, abs(rows - 0.5))) * smoothstep(0.03, 0.2, l);
-          float grid = max(step(0.965, fract(pc.x * 12.0)), step(0.965, fract(pc.y * 12.0))) * 0.1;
-          float sweep = 1.0 - smoothstep(0.0, 0.07, abs(pc.y - uRecon));
-          float fade = smoothstep(0.0, 0.08, pc.x) * (1.0 - smoothstep(0.92, 1.0, pc.x)) * smoothstep(0.0, 0.06, pc.y) * (1.0 - smoothstep(0.94, 1.0, pc.y));
-          float v = l * 0.82 + wire * 0.2 + edge * 0.5 + grid * (0.4 + l);
-          v *= 1.0 - 0.35 * uGlitch * pick;
-          v += sweep * 0.3 * (0.3 + l);
-          crt += uPhos * v * fade;
+          vec2 fit = vec2(1.0);   // object-fit: cover
+          if (uPortraitAspect > boxAspect) fit.x = boxAspect / uPortraitAspect; else fit.y = uPortraitAspect / boxAspect;
+
+          // signal slip: about a quarter of the bands shift sideways, and the raster lines lose their place
+          float tick = floor(uTime * 30.0);
+          float band = floor(pc0.y * 22.0 + sHash(vec2(tick, 3.0)) * 4.0);
+          float pick = step(0.74, sHash(vec2(band * 1.7, tick)));
+          float slip = (sHash(vec2(band, tick)) - 0.5) * 0.04 * pick;
+          vec2 pc = vec2(pc0.x + slip * uGlitch, pc0.y);
+          // below the sweep line the picture is still waiting to be rebuilt
+          float pending = uDegrade * smoothstep(uRecon - 0.015, uRecon + 0.015, pc.y);
+
+          // vertical phosphor raster: each line reads one sample and swells with brightness; dots run down it
+          float rows = uCols / boxAspect * 2.0;
+          float xr = pc.x * uCols + (sHash(vec2(floor(pc0.y * 30.0), tick)) - 0.5) * 0.9 * uGlitch;
+          float yr = pc.y * rows;
+          float px = fwidth(pc0.x * uCols);                           // raster columns per screen pixel
+          vec2 cellAt = vec2((floor(xr) + 0.5) / uCols, (floor(yr) + 0.5) / rows);
+          float lq = pLum(pMap(cellAt, fit), uLod);
+          lq = mix(lq, floor(lq * 5.0 + 0.5) / 5.0, pending * 0.6);  // fewer tones while it waits
+          float halfW = 0.07 + 0.4 * pow(lq, 0.75);
+          float line = 1.0 - smoothstep(halfW - px, halfW + px, abs(fract(xr) - 0.5));
+          float dots = 1.0 - 0.32 * (0.5 + 0.5 * cos(6.2832 * yr)) * clamp(1.0 - fwidth(yr) * 1.5, 0.0, 1.0);
+          float raster = line * dots * lq * 1.7;
+
+          vec2 puv = pMap(pc, fit);
+          float tone = pLum(puv, uLod - 2.0);                         // the smooth picture underneath
+          float soft = pLum(puv, uLod + 1.6);                         // wide blur: bloom, and where the figure is
+          // the raster is only drawn where a line spans a few pixels; smaller than that it would only moiré
+          float k = smoothstep(0.62, 0.3, px);
+          float v = mix(tone * 1.05, raster * 0.86 + tone * 0.2, k) + soft * 0.12;
+
+          // interference: a few short stray line fragments in the dark around the figure, reshuffled each cycle
+          float colId = floor(pc0.x * uCols), cyc = floor(uTime * 0.5);
+          float stray = step(0.94, sHash(vec2(colId, cyc))) * step(0.7, sHash(vec2(colId * 1.3 + cyc, floor(pc0.y * 14.0))));
+          v += stray * (1.0 - smoothstep(0.09 - px, 0.09 + px, abs(fract(pc0.x * uCols) - 0.5))) * dots
+            * (1.0 - smoothstep(0.0, 0.12, soft)) * 0.14 * k;
+
+          // reconstruction mesh, only in the part still waiting to be rebuilt
+          vec2 m = vec2(pc.x * boxAspect, pc.y) * 22.0 + vec2(soft * 0.9, -soft * 1.6);
+          float mesh = max(pLine(m.y), max(pLine(m.x * 0.866 + m.y * 0.5), pLine(m.x * 0.866 - m.y * 0.5)));
+          v += mesh * smoothstep(0.03, 0.16, soft) * 0.1 * pending;
+
+          float bar = exp(-pow((pc.y - fract(uTime * 1.9)) * 16.0, 2.0));
+          v *= 1.0 - uGlitch * 0.2 * pick;
+          v += uGlitch * bar * 0.14 * (0.25 + soft);
+          // the sweep itself, and a short afterglow on what it has just rebuilt
+          float d = uRecon - pc.y;
+          v += exp(-d * d * 3600.0) * 0.36 * (0.2 + soft) + step(0.0, d) * exp(-d * 9.0) * 0.1 * soft * uDegrade;
+          v *= 0.965 + 0.035 * sin(uTime * 23.0);                    // a breath of flicker
+
+          float fade = smoothstep(0.0, 0.06, pc0.x) * (1.0 - smoothstep(0.95, 1.0, pc0.x)) * smoothstep(0.0, 0.06, pc0.y) * (1.0 - smoothstep(0.94, 1.0, pc0.y));
+          // a hairline measuring scale down the left edge (the corner marks are drawn on the text canvas)
+          float fwy = fwidth(pc0.y) + 0.0012;
+          float ticks = step(0.02, pc0.x) * step(pc0.x, 0.02 + 0.011 * (1.0 + step(0.75, fract(pc0.y * 4.5 + 0.375))))
+            * step(0.2, pc0.y) * step(pc0.y, 0.8) * (1.0 - smoothstep(fwy * 0.5, fwy * 1.5, abs(fract(pc0.y * 18.0) - 0.5) / 18.0));
+          v = max(v, 0.0) * fade + ticks * 0.22 * (1.0 - 0.5 * uGlitch);
+          // teal phosphor; the hottest highlights burn slightly whiter
+          crt += uPhos * v + vec3(0.55, 1.0, 0.9) * pow(clamp(tone, 0.0, 1.0), 4.0) * 0.08 * fade;
         }
         float scan = 1.0 - uScan * (0.5 + 0.5 * sin(suv.y * 600.0));
         totalEmissiveRadiance = crt * scan * uGain;`);
@@ -457,12 +544,13 @@ export function createDeck({ stage, canvas, note, reduceMotion }) {
     applyJourney();
     if (controls.enabled) controls.update();
     drawUi(now);
-    // portrait disturbance: stable for about 1.8 s, a 160 ms slip, then a quick redraw sweep
+    // portrait disturbance: see portraitSignal. With reduced motion the picture simply stays stable.
     if (!reduceMotion) {
-      const t = (now / 1000) % 2;
-      uniforms.uTime.value = now / 1000;
-      uniforms.uGlitch.value = t > 1.82 && t < 1.98 ? Math.sin(Math.PI * (t - 1.82) / 0.16) : 0;
-      uniforms.uRecon.value = t < 0.32 ? t / 0.28 : 2;
+      const sig = portraitSignal(now / 1000);
+      uniforms.uTime.value = (now / 1000) % 600;
+      uniforms.uGlitch.value = sig.glitch;
+      uniforms.uDegrade.value = sig.degrade;
+      uniforms.uRecon.value = sig.recon;
     }
     renderer.render(scene, camera);
   }

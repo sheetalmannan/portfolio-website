@@ -3,6 +3,7 @@
 import { createDeck } from './deck.js';
 import { createHolo } from './holo.js';
 import { createBoard } from './board.js';
+import { initTheme, initTypewriter } from './ui.js';
 
 const root = document.documentElement;
 const motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
@@ -11,31 +12,7 @@ const { gsap, ScrollTrigger } = window;
 if (gsap) gsap.registerPlugin(ScrollTrigger);
 if (!reduceMotion && gsap) root.classList.add('motion');
 
-/* ── Theme: the system preference until the visitor chooses, then their choice ── */
-const toggle = document.getElementById('theme-toggle');
-const systemDark = matchMedia('(prefers-color-scheme: dark)');
-function showTheme(theme, animate) {
-  if (animate && !reduceMotion) {
-    root.classList.add('theme-fade');
-    clearTimeout(showTheme.timer);
-    showTheme.timer = setTimeout(() => root.classList.remove('theme-fade'), 320);
-  }
-  root.dataset.theme = theme;
-  toggle.setAttribute('aria-pressed', String(theme === 'dark'));
-  toggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
-  document.dispatchEvent(new Event('themechange'));
-}
-toggle.addEventListener('click', () => {
-  const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
-  try { localStorage.setItem('theme', next); } catch (e) {}
-  showTheme(next, true);
-});
-systemDark.addEventListener('change', (e) => {
-  let saved = null;
-  try { saved = localStorage.getItem('theme'); } catch (err) {}
-  if (!saved) showTheme(e.matches ? 'dark' : 'light', true);
-});
-showTheme(root.dataset.theme, false);
+initTheme({ reduceMotion });
 
 /* ── Navigation ── */
 const nav = document.getElementById('nav');
@@ -140,6 +117,17 @@ if (mm && deck) {
   });
   deck.ready.then(() => ScrollTrigger.refresh());
 }
+
+/* ── Typewriter section headings ── */
+initTypewriter(document.querySelectorAll('.section-head h2'), {
+  gsap, ScrollTrigger, reduceMotion,
+  // Experience sits behind the pinned hero until the veil dissolves: type it at that moment, not before
+  startFor: (h) => {
+    if (h.id !== 'h-experience' || !root.classList.contains('journey')) return null;
+    const pin = ScrollTrigger.getAll().find((t) => t.pin && t.pin.id === 'hero');
+    return pin ? Math.round(pin.start + (pin.end - pin.start) * 0.93) : null;
+  },
+});
 
 /* ── PCB trace ─────────────────────────────────────────────────────────
    One main trace comes out of the screen, runs down the left rail and ends in the processor's pins.

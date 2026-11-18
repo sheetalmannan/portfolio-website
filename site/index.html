@@ -124,26 +124,21 @@
       <header class="section-head" data-node="section">
         <p class="label"><span class="idx">02</span> / projects</p>
         <h2 id="h-projects">Projects</h2>
-        <p class="section-note">Eight builds across embedded systems, digital and mixed-signal design, robotics and machine learning.</p>
+        <p class="section-note">Three featured builds. The full library holds all eight, across embedded systems, digital and mixed-signal design, robotics and machine learning.</p>
       </header>
 
-      <article class="lead" id="p-utensil" aria-labelledby="t-utensil">
-        <div class="lead-main">
-          <p class="label"><span class="idx">P.01</span> / embedded systems · controls</p>
-          <h3 id="t-utensil">Self-Stabilizing Utensil for Parkinson's Disease Patients</h3>
-          <p>Real-time tremor-cancellation device using Python signal processing, I2C sensor integration, closed-loop PID control, and a custom PCB with EMC compliance.</p>
-        </div>
-        <dl class="spec">
-          <div><dt>Signal path</dt><dd>I2C sensors → Python signal processing → closed-loop PID</dd></div>
-          <div><dt>Hardware</dt><dd>Custom PCB, EMC compliant</dd></div>
-          <div><dt>Operation</dt><dd>Real-time tremor cancellation</dd></div>
-          <div><dt>Stack</dt><dd>Embedded Systems · PID Control · PCB Design · Python</dd></div>
-        </dl>
-      </article>
-
-      <ol class="ledger" start="2">
+      <ol class="ledger featured">
+        <li class="entry" id="p-utensil">
+          <p class="entry-meta"><span class="idx">P.01</span><span class="entry-cat">Embedded systems · controls</span><span class="entry-kind">Tremor-cancellation device</span></p>
+          <div class="entry-body">
+            <h3>Self-Stabilizing Utensil for Parkinson's Disease Patients</h3>
+            <p>Real-time tremor-cancellation device using Python signal processing, I2C sensor integration, closed-loop PID control, and a custom PCB with EMC compliance.</p>
+            <ul class="tags" aria-label="Technologies"><li>Embedded Systems</li><li>PID Control</li><li>PCB Design</li><li>Python</li></ul>
+          </div>
+          <p class="readout"><strong>PID</strong><span>closed-loop control · custom PCB with EMC compliance</span></p>
+        </li>
         <li class="entry" id="p-dnn">
-          <p class="entry-meta"><span class="idx">P.02</span><span>FPGA · machine learning</span></p>
+          <p class="entry-meta"><span class="idx">P.02</span><span class="entry-cat">FPGA · digital design</span><span class="entry-kind">Neural network accelerator, SoC</span></p>
           <div class="entry-body">
             <h3>Deep Neural Network Accelerator on FPGA</h3>
             <p>Fully-connected DNN in Verilog for MNIST digit classification (98% accuracy), integrated as an SoC with AXI4-Lite and an ARM processor.</p>
@@ -151,26 +146,8 @@
           </div>
           <p class="readout"><strong>98%</strong><span>MNIST classification accuracy</span></p>
         </li>
-        <li class="entry" id="p-ecg">
-          <p class="entry-meta"><span class="idx">P.03</span><span>Mixed-signal IC</span></p>
-          <div class="entry-body">
-            <h3>Mixed-Signal IC Design — Smart Watch ECG Sensor</h3>
-            <p>Mixed-signal CMOS front-end (3:1 MUX, PGA, 6-bit SAR ADC) designed in TSMC 65nm using Cadence Virtuoso.</p>
-            <ul class="tags" aria-label="Technologies"><li>IC Design</li><li>Cadence Virtuoso</li><li>Mixed-Signal</li></ul>
-          </div>
-          <p class="readout"><strong>65 nm</strong><span>TSMC process · 6-bit SAR ADC</span></p>
-        </li>
-        <li class="entry" id="p-security">
-          <p class="entry-meta"><span class="idx">P.04</span><span>Real-time embedded</span></p>
-          <div class="entry-body">
-            <h3>Real-Time Home Security System</h3>
-            <p>FreeRTOS-based system with three concurrent tasks (motion detection, image capture, alerts); interrupt-driven PIR sensing, ArduCam, RTOS semaphores/queues, &lt;200ms response time.</p>
-            <ul class="tags" aria-label="Technologies"><li>FreeRTOS</li><li>Embedded Systems</li><li>Real-Time OS</li></ul>
-          </div>
-          <p class="readout"><strong>&lt;200 ms</strong><span>response time · 3 concurrent tasks</span></p>
-        </li>
         <li class="entry" id="p-quadcopter">
-          <p class="entry-meta"><span class="idx">P.05</span><span>Robotics · vision</span></p>
+          <p class="entry-meta"><span class="idx">P.03</span><span class="entry-cat">Robotics · software</span><span class="entry-kind">Autonomous quadcopter</span></p>
           <div class="entry-body">
             <h3>Infrared Target Detection &amp; Aerial Response Quadcopter</h3>
             <p>Autonomous quadcopter detecting 940nm IR sources and computing GPS coordinates; spiral waypoint navigation in Python, Raspberry Pi 4 + Cube Orange, 30%+ reduction in positional error.</p>
@@ -178,40 +155,14 @@
           </div>
           <p class="readout"><strong>30%+</strong><span>reduction in positional error</span></p>
         </li>
-        <li class="entry" id="p-synth">
-          <p class="entry-meta"><span class="idx">P.06</span><span>FPGA · digital design</span></p>
-          <div class="entry-body">
-            <h3>Digital Waveform Synthesizer</h3>
-            <p>FPGA-based sine wave generator on a Nexys A7 board; VHDL, Xilinx Vivado, 89% execution-time reduction vs. a software-based approach.</p>
-            <ul class="tags" aria-label="Technologies"><li>FPGA</li><li>VHDL</li><li>Xilinx Vivado</li></ul>
-          </div>
-          <p class="readout"><strong>89%</strong><span>execution-time reduction vs. software</span></p>
-        </li>
-        <li class="entry" id="p-facial">
-          <p class="entry-meta"><span class="idx">P.07</span><span>Deep learning</span></p>
-          <div class="entry-body">
-            <h3>Deep Learning Facial Verification Model</h3>
-            <p>Siamese neural network for facial authentication, built with TensorFlow on the LFW dataset with custom training loops.</p>
-            <ul class="tags" aria-label="Technologies"><li>TensorFlow</li><li>Deep Learning</li><li>Computer Vision</li></ul>
-          </div>
-          <p class="readout"><strong>LFW</strong><span>dataset · Siamese network</span></p>
-        </li>
-        <li class="entry" id="p-counter">
-          <p class="entry-meta"><span class="idx">P.08</span><span>Full-custom IC</span></p>
-          <div class="entry-body">
-            <h3>Transistor-Level 8-bit Program Counter Design</h3>
-            <p>Full-custom static CMOS design (mux, adder, flip-flop register) built in Cadence Virtuoso.</p>
-            <ul class="tags" aria-label="Technologies"><li>IC Design</li><li>CMOS</li><li>Cadence Virtuoso</li></ul>
-          </div>
-          <p class="readout"><strong>8-bit</strong><span>static CMOS · transistor level</span></p>
-        </li>
       </ol>
+      <p class="more"><a class="btn btn-ghost btn-more" href="projects.html">Explore all projects <span aria-hidden="true">→</span></a></p>
     </section>
 
     <section class="section" id="skills" aria-labelledby="h-skills">
       <header class="section-head" data-node="section">
         <p class="label"><span class="idx">03</span> / skills</p>
-        <h2 id="h-skills">Technical skills</h2>
+        <h2 id="h-skills">Skills</h2>
         <p class="section-note">Each part on the board is one skill area. A marked skill links to a project that uses it.</p>
       </header>
       <div class="board-fig" id="board-fig">
@@ -220,14 +171,14 @@
             <p class="ref">U1 · FPGA</p>
             <h3 id="d-hw"><span class="idx">A</span>Hardware &amp; digital design</h3>
             <ul class="parts">
-              <li><a href="#p-synth">VHDL</a></li><li><a href="#p-dnn">Verilog</a></li><li><a href="#p-dnn">FPGA</a></li><li><a href="#p-synth">Xilinx Vivado</a></li><li><a href="#p-ecg">Cadence Virtuoso</a></li><li>ModelSim</li><li>Tcl</li>
+              <li><a href="projects.html#p-synth">VHDL</a></li><li><a href="#p-dnn">Verilog</a></li><li><a href="#p-dnn">FPGA</a></li><li><a href="projects.html#p-synth">Xilinx Vivado</a></li><li><a href="projects.html#p-ecg">Cadence Virtuoso</a></li><li>ModelSim</li><li>Tcl</li>
             </ul>
           </section>
           <section data-part="1" class="domain d-emb" aria-labelledby="d-emb">
             <p class="ref">U2 · MCU</p>
             <h3 id="d-emb"><span class="idx">B</span>Embedded systems &amp; controls</h3>
             <ul class="parts">
-              <li>C</li><li>C++</li><li>ARM Cortex-M</li><li>STM32</li><li>Arduino</li><li>ESP32</li><li><a href="#p-quadcopter">Raspberry Pi</a></li><li><a href="#p-security">FreeRTOS</a></li><li>µC/OS-III</li><li><a href="#p-security">RTOS</a></li><li><a href="#p-utensil">I2C</a></li><li>SPI</li><li>UART</li><li>GPIO</li><li>PWM</li><li>MATLAB/Simulink</li>
+              <li>C</li><li>C++</li><li>ARM Cortex-M</li><li>STM32</li><li>Arduino</li><li>ESP32</li><li><a href="#p-quadcopter">Raspberry Pi</a></li><li><a href="projects.html#p-security">FreeRTOS</a></li><li>µC/OS-III</li><li><a href="projects.html#p-security">RTOS</a></li><li><a href="#p-utensil">I2C</a></li><li>SPI</li><li>UART</li><li>GPIO</li><li>PWM</li><li>MATLAB/Simulink</li>
             </ul>
           </section>
         </div>
@@ -246,7 +197,7 @@
             <p class="ref">U3 · Accelerator</p>
             <h3 id="d-ai"><span class="idx">D</span>AI &amp; machine learning</h3>
             <ul class="parts">
-              <li>PyTorch</li><li><a href="#p-facial">TensorFlow</a></li><li>NumPy</li><li>Pandas</li><li>OpenAI</li>
+              <li>PyTorch</li><li><a href="projects.html#p-facial">TensorFlow</a></li><li>NumPy</li><li>Pandas</li><li>OpenAI</li>
             </ul>
           </section>
           <section data-part="4" class="domain d-tools" aria-labelledby="d-tools">
@@ -265,7 +216,7 @@
       <div class="contact-copy">
         <header class="section-head" data-node="section">
           <p class="label"><span class="idx">04</span> / contact</p>
-          <h2 id="h-say-hi">Say, hi.</h2>
+          <h2 id="h-say-hi">Say, hi!</h2>
         </header>
         <p class="intro">Open to new-grad software, AI &amp; hardware roles.</p>
         <ul class="contact-links">

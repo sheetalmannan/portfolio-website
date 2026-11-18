@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project library — Sheetal Mannan</title>
+<meta name="description" content="All eight of Sheetal Mannan's engineering projects: embedded systems, FPGA and IC design, robotics and machine learning.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:,">
+<script>
+  // Theme before first paint: a saved manual choice wins, otherwise the operating system's preference.
+  (function () {
+    var saved = null;
+    try { saved = localStorage.getItem('theme'); } catch (e) {}
+    var dark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&family=VT323&display=swap">
+<link rel="stylesheet" href="css/site.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+</head>
+<body class="library-page">
+<a class="skip" href="#library">Skip to projects</a>
+
+<header class="nav scrolled" id="nav">
+  <a class="mark" href="index.html" aria-label="Sheetal Mannan, home">SM</a>
+  <a class="back" href="index.html#projects"><span aria-hidden="true">←</span> Back to portfolio</a>
+  <button class="icon-btn theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark theme" aria-pressed="false">
+    <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg>
+    <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.2A8 8 0 0 1 9.8 4a8 8 0 1 0 10.2 10.2z"/></svg>
+  </button>
+</header>
+
+<main class="library" id="library">
+  <header class="section-head">
+    <p class="label"><span class="idx">02</span> / projects / full library</p>
+    <h1 id="h-library">Project library</h1>
+    <p class="section-note">Eight builds across embedded systems, digital and mixed-signal design, robotics and machine learning.</p>
+  </header>
+  <ol class="cards">
+      <li class="card" id="p-utensil">
+        <article aria-labelledby="t-utensil">
+          <p class="card-top"><span class="chip">Embedded systems · controls</span><span class="card-no" aria-hidden="true">01</span></p>
+          <h2 id="t-utensil">Self-Stabilizing Utensil for Parkinson's Disease Patients</h2>
+          <p class="card-text">Real-time tremor-cancellation device using Python signal processing, I2C sensor integration, closed-loop PID control, and a custom PCB with EMC compliance.</p>
+          <ul class="tags" aria-label="Technologies"><li>Embedded Systems</li><li>PID Control</li><li>PCB Design</li><li>Python</li></ul>
+          <p class="card-fact"><strong>PID</strong><span>closed-loop control · custom PCB</span></p>
+        </article>
+      </li>
+      <li class="card" id="p-dnn">
+        <article aria-labelledby="t-dnn">
+          <p class="card-top"><span class="chip">FPGA · digital design</span><span class="card-no" aria-hidden="true">02</span></p>
+          <h2 id="t-dnn">Deep Neural Network Accelerator on FPGA</h2>
+          <p class="card-text">Fully-connected DNN in Verilog for MNIST digit classification (98% accuracy), integrated as an SoC with AXI4-Lite and an ARM processor.</p>
+          <ul class="tags" aria-label="Technologies"><li>FPGA</li><li>Verilog</li><li>Machine Learning</li></ul>
+          <p class="card-fact"><strong>98%</strong><span>MNIST classification accuracy</span></p>
+        </article>
+      </li>
+      <li class="card" id="p-quadcopter">
+        <article aria-labelledby="t-quadcopter">
+          <p class="card-top"><span class="chip">Robotics · software</span><span class="card-no" aria-hidden="true">03</span></p>
+          <h2 id="t-quadcopter">Infrared Target Detection &amp; Aerial Response Quadcopter</h2>
+          <p class="card-text">Autonomous quadcopter detecting 940nm IR sources and computing GPS coordinates; spiral waypoint navigation in Python, Raspberry Pi 4 + Cube Orange, 30%+ reduction in positional error.</p>
+          <ul class="tags" aria-label="Technologies"><li>Robotics</li><li>Computer Vision</li><li>Python</li></ul>
+          <p class="card-fact"><strong>30%+</strong><span>reduction in positional error</span></p>
+        </article>
+      </li>
+      <li class="card" id="p-ecg">
+        <article aria-labelledby="t-ecg">
+          <p class="card-top"><span class="chip">Mixed-signal IC</span><span class="card-no" aria-hidden="true">04</span></p>
+          <h2 id="t-ecg">Mixed-Signal IC Design — Smart Watch ECG Sensor</h2>
+          <p class="card-text">Mixed-signal CMOS front-end (3:1 MUX, PGA, 6-bit SAR ADC) designed in TSMC 65nm using Cadence Virtuoso.</p>
+          <ul class="tags" aria-label="Technologies"><li>IC Design</li><li>Cadence Virtuoso</li><li>Mixed-Signal</li></ul>
+          <p class="card-fact"><strong>65 nm</strong><span>TSMC process · 6-bit SAR ADC</span></p>
+        </article>
+      </li>
+      <li class="card" id="p-security">
+        <article aria-labelledby="t-security">
+          <p class="card-top"><span class="chip">Real-time embedded</span><span class="card-no" aria-hidden="true">05</span></p>
+          <h2 id="t-security">Real-Time Home Security System</h2>
+          <p class="card-text">FreeRTOS-based system with three concurrent tasks (motion detection, image capture, alerts); interrupt-driven PIR sensing, ArduCam, RTOS semaphores/queues, &lt;200ms response time.</p>
+          <ul class="tags" aria-label="Technologies"><li>FreeRTOS</li><li>Embedded Systems</li><li>Real-Time OS</li></ul>
+          <p class="card-fact"><strong>&lt;200 ms</strong><span>response time · 3 concurrent tasks</span></p>
+        </article>
+      </li>
+      <li class="card" id="p-synth">
+        <article aria-labelledby="t-synth">
+          <p class="card-top"><span class="chip">FPGA · digital design</span><span class="card-no" aria-hidden="true">06</span></p>
+          <h2 id="t-synth">Digital Waveform Synthesizer</h2>
+          <p class="card-text">FPGA-based sine wave generator on a Nexys A7 board; VHDL, Xilinx Vivado, 89% execution-time reduction vs. a software-based approach.</p>
+          <ul class="tags" aria-label="Technologies"><li>FPGA</li><li>VHDL</li><li>Xilinx Vivado</li></ul>
+          <p class="card-fact"><strong>89%</strong><span>execution-time reduction vs. software</span></p>
+        </article>
+      </li>
+      <li class="card" id="p-facial">
+        <article aria-labelledby="t-facial">
+          <p class="card-top"><span class="chip">Deep learning</span><span class="card-no" aria-hidden="true">07</span></p>
+          <h2 id="t-facial">Deep Learning Facial Verification Model</h2>
+          <p class="card-text">Siamese neural network for facial authentication, built with TensorFlow on the LFW dataset with custom training loops.</p>
+          <ul class="tags" aria-label="Technologies"><li>TensorFlow</li><li>Deep Learning</li><li>Computer Vision</li></ul>
+          <p class="card-fact"><strong>LFW</strong><span>dataset · Siamese network</span></p>
+        </article>
+      </li>
+      <li class="card" id="p-counter">
+        <article aria-labelledby="t-counter">
+          <p class="card-top"><span class="chip">Full-custom IC</span><span class="card-no" aria-hidden="true">08</span></p>
+          <h2 id="t-counter">Transistor-Level 8-bit Program Counter Design</h2>
+          <p class="card-text">Full-custom static CMOS design (mux, adder, flip-flop register) built in Cadence Virtuoso.</p>
+          <ul class="tags" aria-label="Technologies"><li>IC Design</li><li>CMOS</li><li>Cadence Virtuoso</li></ul>
+          <p class="card-fact"><strong>8-bit</strong><span>static CMOS · transistor level</span></p>
+        </article>
+      </li>
+  </ol>
+  <p class="more"><a class="btn btn-ghost btn-more" href="index.html#projects"><span aria-hidden="true">←</span> Back to portfolio</a></p>
+</main>
+
+<footer class="foot">
+  <p>© 2026 Sheetal Mannan</p>
+  <a href="#library">Back to top ↑</a>
+</footer>
+
+<script type="module" src="js/library.js"></script>
+</body>
+</html>
